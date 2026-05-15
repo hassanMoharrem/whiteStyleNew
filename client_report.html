@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير تسليم مشروع White Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== إعدادات عامة ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.8;
+            color: #1A1A1A;
+            background: #fff;
+            direction: rtl;
+        }
+
+        /* ===== إعدادات الطباعة ===== */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                padding: 0;
+                margin: 0;
+            }
+
+            .page-break {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+
+            /* منع تقطيع البطاقات بين الصفحات */
+            .card, .feature-card, .grid-item {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* إصلاح تخطيط الشبكة للطباعة */
+            .grid, .cards-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            /* منع تقطيع حاوية البطاقات */
+            .cards-container {
+                break-inside: avoid;
+            }
+
+            /* إبقاء العناوين مع المحتوى */
+            h2, h3, .section-title {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            /* إضافة padding مناسب للأقسام */
+            .section {
+                padding: 20px 30px;
+            }
+
+            /* منع تقطيع الجداول */
+            .table-wrapper {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* منع تقطيع عناصر القائمة المميزة */
+            .feature-list li {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+
+        /* ===== صفحة الغلاف ===== */
+        .cover-page {
+            height: 100vh;
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .cover-page::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 3rem;
+        }
+
+        .cover-logo {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .cover-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+            color: #ffffff;
+        }
+
+        .cover-subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            color: #ffffff;
+        }
+
+        .cover-divider {
+            width: 200px;
+            height: 3px;
+            background: white;
+            margin: 2rem auto;
+        }
+
+        .cover-info {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            opacity: 0.85;
+            color: #ffffff;
+        }
+
+        .cover-date {
+            margin-top: 3rem;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            color: #ffffff;
+        }
+
+        /* ===== الصفحات الداخلية ===== */
+        .content-page {
+            min-height: 100vh;
+            padding: 60px 80px;
+            background: #F8F8F8;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+            padding: 2rem 3rem;
+            margin: -60px -80px 3rem -80px;
+            border-bottom: 5px solid #784734;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .page-number {
+            font-size: 1rem;
+            opacity: 0.8;
+            color: #ffffff;
+        }
+
+        /* ===== العناوين ===== */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #784734;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #784734;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #784734;
+            margin: 2rem 0 1rem 0;
+            padding-right: 1.5rem;
+            border-right: 5px solid #784734;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #666666;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        /* ===== النصوص ===== */
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #333;
+            line-height: 1.9;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        /* ===== القوائم ===== */
+        ul, ol {
+            margin: 1rem 0 1rem 2rem;
+        }
+
+        li {
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.8;
+        }
+
+        /* ===== الجداول ===== */
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1.2rem;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #eee;
+            font-size: 1rem;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background: #f0f0f0;
+        }
+
+        /* ===== البطاقات ===== */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-right: 5px solid #784734;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #784734;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== صناديق الكود ===== */
+        .code-block {
+            background: #1A1A1A;
+            color: #00ff00;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .endpoint {
+            background: white;
+            border: 2px solid #784734;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 0.8rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .method {
+            background: #784734;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .method.get {
+            background: #28a745;
+        }
+
+        .method.post {
+            background: #007bff;
+        }
+
+        .method.put {
+            background: #ffc107;
+        }
+
+        .method.delete {
+            background: #dc3545;
+        }
+
+        .route-path {
+            font-family: 'Courier New', monospace;
+            color: #666;
+            flex: 1;
+        }
+
+        /* ===== الشبكة ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .grid-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #784734;
+        }
+
+        .grid-item h4 {
+            color: #784734;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== القائمة ذات الأيقونات ===== */
+        .feature-list {
+            list-style: none;
+            margin: 0;
+        }
+
+        .feature-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-right: 2rem;
+        }
+
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            color: #784734;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        /* ===== التذييل ===== */
+        .page-footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* ===== عناصر زخرفية ===== */
+        .decorative-line {
+            height: 3px;
+            background: linear-gradient(to left, transparent, #784734, transparent);
+            margin: 2rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #784734;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0.3rem;
+        }
+
+        .badge.secondary {
+            background: #666;
+        }
+
+        .badge.success {
+            background: #28a745;
+        }
+
+        /* ===== فهرس المحتويات ===== */
+        .toc {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .toc-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toc-item:last-child {
+            border-bottom: none;
+        }
+
+        .toc-number {
+            background: #784734;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-left: 1rem;
+        }
+
+        .toc-title {
+            flex: 1;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* ===== تحسينات الطباعة ===== */
+        @media print {
+            .content-page {
+                padding: 40px 60px;
+                break-inside: auto;
+            }
+
+            .page-header {
+                margin: -40px -60px 2rem -60px;
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            h1 {
+                font-size: 2rem;
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            h3 {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            /* تحسين عرض البطاقات في الطباعة */
+            .card {
+                margin: 1rem 0;
+            }
+
+            /* تحسين عرض الشبكة */
+            .grid {
+                break-inside: auto;
+            }
+
+            .grid-item {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- صفحة الغلاف -->
+    <div class="cover-page">
+        <div class="cover-content">
+            <div class="cover-logo">White Style</div>
+            <h1 class="cover-title">نظام إدارة متجر الأزياء المتكامل</h1>
+            <p class="cover-subtitle">تقرير تسليم المشروع النهائي</p>
+            <div class="cover-divider"></div>
+            <p class="cover-info"><strong>العميل:</strong> White Style - فلسطين</p>
+            <p class="cover-info"><strong>فريق التطوير:</strong> قسم البرمجة والتطوير</p>
+            <p class="cover-date">تاريخ التسليم: مايو 2026</p>
+        </div>
+    </div>
+
+    <!-- فهرس المحتويات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">فهرس المحتويات</h1>
+        </div>
+
+        <div class="toc">
+            <div class="toc-item">
+                <div class="toc-number">1</div>
+                <div class="toc-title">نبذة عن المشروع</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">2</div>
+                <div class="toc-title">التقنيات والأدوات المستخدمة</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">3</div>
+                <div class="toc-title">مكونات النظام</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">4</div>
+                <div class="toc-title">لوحة التحكم - الإدارة</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">5</div>
+                <div class="toc-title">واجهة الموقع الإلكتروني</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">6</div>
+                <div class="toc-title">نظام إدارة الطلبات</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">7</div>
+                <div class="toc-title">هيكل قاعدة البيانات</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">8</div>
+                <div class="toc-title">واجهات برمجة التطبيقات (API)</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">9</div>
+                <div class="toc-title">الأمان والحماية</div>
+            </div>
+            <div class="toc-item">
+                <div class="toc-number">10</div>
+                <div class="toc-title">دليل التشغيل والإعداد</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- القسم 1: نبذة عن المشروع -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">نبذة عن المشروع</h1>
+            <p class="page-number">القسم 1</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 الهدف من المشروع</h2>
+            <p>
+                تم تطوير <span class="highlight">نظام White Style</span> ليكون منصة متكاملة لإدارة متجر الأزياء الإلكتروني،
+                يجمع بين لوحة تحكم احترافية للإدارة وواجهة عصرية للعملاء، مع التركيز على تجربة المستخدم والأداء العالي.
+            </p>
+        </div>
+
+        <h2>📋 وصف النظام</h2>
+        <p>
+            نظام White Style هو منصة تجارة إلكترونية متكاملة مصممة خصيصاً لمتاجر الأزياء في فلسطين،
+            يوفر النظام جميع الأدوات اللازمة لإدارة المنتجات، الطلبات، العملاء، والمحتوى بشكل سلس واحترافي.
+        </p>
+
+        <div class="grid">
+            <div class="grid-item">
+                <h4>🎨 واجهة عصرية</h4>
+                <p>تصميم احترافي متجاوب مع جميع الأجهزة (موبايل، تابلت، ديسكتوب) بتقنيات Vue.js 3 الحديثة.</p>
+            </div>
+            <div class="grid-item">
+                <h4>⚡ أداء عالي</h4>
+                <p>بنية تحتية قوية باستخدام Laravel 12 وتقنيات التخزين المؤقت لضمان سرعة استجابة ممتازة.</p>
+            </div>
+            <div class="grid-item">
+                <h4>🔒 أمان محكم</h4>
+                <p>حماية شاملة باستخدام Laravel Sanctum للمصادقة والتحقق من الصلاحيات.</p>
+            </div>
+            <div class="grid-item">
+                <h4>📱 تجربة مستخدم مميزة</h4>
+                <p>سهولة في التصفح والشراء مع نظام سلة مشتريات متطور ونظام مفضلة ذكي.</p>
+            </div>
+        </div>
+
+        <h2>✨ المميزات الرئيسية</h2>
+        <ul class="feature-list">
+            <li>لوحة تحكم شاملة لإدارة كافة جوانب المتجر</li>
+            <li>إدارة متقدمة للمنتجات مع دعم الصور المتعددة والألوان والمقاسات</li>
+            <li>نظام طلبات احترافي مع تتبع الحالات والطباعة</li>
+            <li>لوحة إحصائيات تفاعلية مع رسوم بيانية</li>
+            <li>نظام سلة مشتريات ذكي بالتخزين المحلي</li>
+            <li>نظام مفضلة للمنتجات</li>
+            <li>بحث متقدم مع معاينة فورية للنتائج</li>
+            <li>تخصيص ألوان الموقع من لوحة التحكم</li>
+            <li>نظام مدن فلسطينية مع أسعار التوصيل</li>
+            <li>واجهة عربية كاملة بدعم RTL</li>
+        </ul>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 1
+        </div>
+    </div>
+
+    <!-- القسم 2: التقنيات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">التقنيات والأدوات المستخدمة</h1>
+            <p class="page-number">القسم 2</p>
+        </div>
+
+        <h2>🔧 الواجهة الخلفية (Backend)</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التقنية</th>
+                        <th>الإصدار</th>
+                        <th>الاستخدام</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Laravel</strong></td>
+                        <td>12.x</td>
+                        <td>إطار العمل الرئيسي للواجهة الخلفية</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PHP</strong></td>
+                        <td>8.3+</td>
+                        <td>لغة البرمجة الأساسية</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MySQL</strong></td>
+                        <td>8.0+</td>
+                        <td>قاعدة البيانات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Laravel Sanctum</strong></td>
+                        <td>4.x</td>
+                        <td>نظام المصادقة والتوكنات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Eloquent ORM</strong></td>
+                        <td>-</td>
+                        <td>التعامل مع قاعدة البيانات</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>💻 الواجهة الأمامية (Frontend)</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التقنية</th>
+                        <th>الإصدار</th>
+                        <th>الاستخدام</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Vue.js</strong></td>
+                        <td>3.5+</td>
+                        <td>إطار العمل الأساسي للواجهة</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pinia</strong></td>
+                        <td>3.0+</td>
+                        <td>إدارة الحالة (State Management)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vue Router</strong></td>
+                        <td>4.6+</td>
+                        <td>التنقل بين الصفحات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Axios</strong></td>
+                        <td>1.14+</td>
+                        <td>التواصل مع API</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bootstrap</strong></td>
+                        <td>5.3+</td>
+                        <td>إطار العمل للتصميم</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bootstrap Icons</strong></td>
+                        <td>1.13+</td>
+                        <td>الأيقونات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SweetAlert2</strong></td>
+                        <td>11.26+</td>
+                        <td>الإشعارات والتنبيهات</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chart.js</strong></td>
+                        <td>4.5+</td>
+                        <td>الرسوم البيانية</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Swiper</strong></td>
+                        <td>12.1+</td>
+                        <td>عروض الشرائح</td>
+                    </tr>
+                    <tr>
+                        <td><strong>@vueform/multiselect</strong></td>
+                        <td>2.6+</td>
+                        <td>قوائم الاختيار المتقدمة</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>🛠️ أدوات التطوير</h2>
+        <div class="grid">
+            <div class="grid-item">
+                <h4>Vite</h4>
+                <p>أداة البناء السريعة للواجهة الأمامية</p>
+            </div>
+            <div class="grid-item">
+                <h4>Composer</h4>
+                <p>مدير الحزم لـ PHP</p>
+            </div>
+            <div class="grid-item">
+                <h4>NPM</h4>
+                <p>مدير الحزم لـ JavaScript</p>
+            </div>
+            <div class="grid-item">
+                <h4>Git</h4>
+                <p>نظام التحكم بالإصدارات</p>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 2
+        </div>
+    </div>
+
+    <!-- القسم 3: مكونات النظام -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">مكونات النظام</h1>
+            <p class="page-number">القسم 3</p>
+        </div>
+
+        <h2>🏗️ معمارية النظام</h2>
+        <p>
+            تم تطوير النظام باستخدام معمارية <span class="highlight">Frontend/Backend المنفصلة</span>
+            (Decoupled Architecture) لضمان المرونة وسهولة التطوير والصيانة.
+        </p>
+
+        <div class="card">
+            <h3>📁 المجلد: whiteStyle (Laravel Backend)</h3>
+            <p>يحتوي على الواجهة الخلفية الكاملة وواجهات API:</p>
+            <ul>
+                <li><strong>app/Models:</strong> 13 موديل (Product, Category, SubCategory, Brand, Size, City, Order, Color, Slider, Faq, Contact, Admin, User)</li>
+                <li><strong>app/Http/Controllers:</strong> Controllers منظمة حسب الوظيفة (Admin, Site)</li>
+                <li><strong>database/migrations:</strong> هيكل قاعدة البيانات الكامل</li>
+                <li><strong>routes/api.php:</strong> جميع مسارات API المحمية والعامة</li>
+                <li><strong>public/storage:</strong> تخزين الصور والملفات</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>💻 المجلد: whiteStyleVue (Vue.js Frontend)</h3>
+            <p>يحتوي على الواجهة الأمامية الكاملة للموقع ولوحة التحكم:</p>
+            <ul>
+                <li><strong>src/views/site:</strong> صفحات الموقع الإلكتروني للعملاء</li>
+                <li><strong>src/admin:</strong> لوحة التحكم الكاملة للإدارة</li>
+                <li><strong>src/stores:</strong> Pinia stores لإدارة البيانات</li>
+                <li><strong>src/components:</strong> المكونات القابلة لإعادة الاستخدام</li>
+                <li><strong>src/router.js:</strong> تعريف جميع المسارات والصفحات</li>
+            </ul>
+        </div>
+
+        <h2>🔄 آلية عمل النظام</h2>
+        <div class="code-block">
+Vue.js Frontend (Port 5173)
+        ↓
+    HTTP Requests (Axios)
+        ↓
+Laravel API (Port 8000)
+        ↓
+    MySQL Database
+        ↓
+    JSON Response
+        ↓
+Vue.js Updates UI
+        </div>
+
+        <h2>📦 الموديلات (Models)</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الموديل</th>
+                        <th>الوصف</th>
+                        <th>العلاقات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Product</strong></td>
+                        <td>المنتجات والتفاصيل</td>
+                        <td>Category, SubCategory, Brand, Sizes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Category</strong></td>
+                        <td>الأقسام الرئيسية</td>
+                        <td>SubCategories, Products</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SubCategory</strong></td>
+                        <td>الأقسام الفرعية</td>
+                        <td>Category, Products</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Brand</strong></td>
+                        <td>البراندات/العلامات التجارية</td>
+                        <td>Products</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Size</strong></td>
+                        <td>المقاسات المتاحة</td>
+                        <td>Products (Many-to-Many)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>City</strong></td>
+                        <td>المدن الفلسطينية وأسعار التوصيل</td>
+                        <td>Orders</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Order</strong></td>
+                        <td>الطلبات ومعلومات العملاء</td>
+                        <td>City</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Color</strong></td>
+                        <td>ألوان النظام القابلة للتخصيص</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Slider</strong></td>
+                        <td>شرائح العرض الرئيسية</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Faq</strong></td>
+                        <td>الأسئلة الشائعة</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contact</strong></td>
+                        <td>رسائل التواصل</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin</strong></td>
+                        <td>المسؤولون</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><strong>User</strong></td>
+                        <td>المستخدمون</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 3
+        </div>
+    </div>
+
+    <!-- القسم 4: لوحة التحكم -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">لوحة التحكم - الإدارة</h1>
+            <p class="page-number">القسم 4</p>
+        </div>
+
+        <h2>🔐 نظام تسجيل الدخول</h2>
+        <div class="card">
+            <p>نظام مصادقة آمن باستخدام <strong>Laravel Sanctum</strong> مع توكنات Bearer:</p>
+            <ul>
+                <li>تسجيل دخول بالبريد الإلكتروني وكلمة المرور</li>
+                <li>توليد توكن API فريد لكل جلسة</li>
+                <li>حماية جميع المسارات الإدارية</li>
+                <li>تخزين التوكن في LocalStorage</li>
+                <li>تسجيل خروج آمن مع حذف التوكن</li>
+            </ul>
+        </div>
+
+        <h2>📊 لوحة الإحصائيات الرئيسية</h2>
+        <p>صفحة رئيسية شاملة تعرض:</p>
+        <div class="grid">
+            <div class="grid-item">
+                <h4>💰 إجمالي المبيعات</h4>
+                <p>مبيعات مكتملة مع احتساب رسوم التوصيل</p>
+            </div>
+            <div class="grid-item">
+                <h4>📦 إجمالي الطلبات</h4>
+                <p>عدد الطلبات الكلي مع تصنيف الحالات</p>
+            </div>
+            <div class="grid-item">
+                <h4>🛍️ عدد المنتجات</h4>
+                <p>إجمالي المنتجات والأقسام</p>
+            </div>
+            <div class="grid-item">
+                <h4>📈 مبيعات الشهر</h4>
+                <p>إحصائيات الشهر الحالي</p>
+            </div>
+        </div>
+
+        <ul class="feature-list">
+            <li>بطاقات حالات الطلبات (قيد الانتظار، قيد المعالجة، مكتملة، ملغاة)</li>
+            <li>رسم بياني تفاعلي لمبيعات آخر 7 أيام (Chart.js)</li>
+            <li>قائمة أفضل 5 مدن من حيث المبيعات</li>
+            <li>جدول أحدث 5 طلبات مع روابط سريعة</li>
+            <li>زر تحديث البيانات</li>
+        </ul>
+
+        <h2>🎛️ أقسام لوحة التحكم</h2>
+
+        <h3>1. إدارة السلايدر (Sliders)</h3>
+        <ul>
+            <li>إضافة وتعديل وحذف شرائح العرض</li>
+            <li>رفع صور بجودة عالية</li>
+            <li>إخفاء/إظهار الشرائح</li>
+            <li>ترتيب العرض</li>
+        </ul>
+
+        <h3>2. إدارة الأقسام (Categories)</h3>
+        <ul>
+            <li>إنشاء أقسام رئيسية للمنتجات</li>
+            <li>رفع صور للأقسام</li>
+            <li>إظهار/إخفاء الأقسام</li>
+            <li>ربط الأقسام بالأقسام الفرعية</li>
+        </ul>
+
+        <h3>3. إدارة الأقسام الفرعية (Sub-Categories)</h3>
+        <ul>
+            <li>إضافة أقسام فرعية تحت الأقسام الرئيسية</li>
+            <li>تنظيم المنتجات بشكل هرمي</li>
+            <li>عمليات CRUD كاملة</li>
+        </ul>
+
+        <h3>4. إدارة البراندات (Brands)</h3>
+        <ul>
+            <li>إضافة العلامات التجارية</li>
+            <li>رفع شعارات البراندات</li>
+            <li>ربط المنتجات بالبراندات</li>
+        </ul>
+
+        <h3>5. إدارة المقاسات (Sizes)</h3>
+        <ul>
+            <li>تعريف المقاسات المتاحة (S, M, L, XL, XXL, إلخ)</li>
+            <li>ربط متعدد للمنتجات بالمقاسات</li>
+        </ul>
+
+        <h3>6. إدارة المدن (Cities)</h3>
+        <ul>
+            <li>80+ مدينة فلسطينية محملة مسبقاً</li>
+            <li>تحديد سعر التوصيل لكل مدينة</li>
+            <li>بحث وفرز وصفحات متعددة</li>
+        </ul>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 4
+        </div>
+    </div>
+
+    <!-- القسم 4 (تابع): إدارة المنتجات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">لوحة التحكم - إدارة المنتجات</h1>
+            <p class="page-number">القسم 4 (تابع)</p>
+        </div>
+
+        <h2>7. إدارة المنتجات (Products)</h2>
+        <p>نظام متقدم وشامل لإدارة المنتجات:</p>
+
+        <div class="card">
+            <h4>✨ المميزات الرئيسية:</h4>
+            <ul class="feature-list">
+                <li>إضافة منتج جديد بواجهة سهلة</li>
+                <li>رفع صورة رئيسية للمنتج</li>
+                <li>اختيار القسم والقسم الفرعي</li>
+                <li>اختيار البراند</li>
+                <li>اختيار المقاسات المتاحة (متعددة)</li>
+                <li>السعر الأساسي وسعر الخصم</li>
+                <li>الكمية المتوفرة</li>
+                <li>وصف تفصيلي للمنتج</li>
+                <li>حالة المنتج (متاح/غير متاح)</li>
+                <li>منتج جديد (New Badge)</li>
+                <li>منتج مميز (Featured)</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h4>🔍 البحث والفلترة:</h4>
+            <ul>
+                <li>بحث بالاسم</li>
+                <li>فلترة حسب القسم</li>
+                <li>فلترة حسب البراند</li>
+                <li>ترتيب حسب السعر/الاسم/التاريخ</li>
+                <li>صفحات متعددة (Pagination)</li>
+            </ul>
+        </div>
+
+        <h3>8. إدارة الطلبات (Orders)</h3>
+        <div class="card">
+            <h4>📋 المميزات:</h4>
+            <ul class="feature-list">
+                <li>عرض جميع الطلبات في جدول منظم</li>
+                <li>بحث بالاسم، رقم الهاتف، أو رقم الطلب</li>
+                <li>فلترة حسب الحالة (انتظار، معالجة، مكتمل، ملغي)</li>
+                <li>عرض تفاصيل الطلب الكاملة في صفحة منفصلة</li>
+                <li>تحديث حالة الطلب</li>
+                <li>طباعة فاتورة احترافية (PDF-ready)</li>
+                <li>حذف الطلبات</li>
+            </ul>
+        </div>
+
+        <h4>🖨️ نظام الطباعة:</h4>
+        <p>فاتورة احترافية جداً تحتوي على:</p>
+        <ul>
+            <li>معلومات الشركة والعميل</li>
+            <li>تفاصيل الطلب بالكامل</li>
+            <li>جدول المنتجات مع الكميات والأسعار</li>
+            <li>حساب المجموع ورسوم التوصيل والإجمالي</li>
+            <li>تصميم احترافي جاهز للطباعة</li>
+        </ul>
+
+        <h3>9. إدارة الأسئلة الشائعة (FAQs)</h3>
+        <ul>
+            <li>إضافة أسئلة وأجوبة</li>
+            <li>إظهار/إخفاء الأسئلة</li>
+            <li>ترتيب العرض</li>
+        </ul>
+
+        <h3>10. إدارة رسائل التواصل (Contacts)</h3>
+        <ul>
+            <li>عرض جميع الرسائل الواردة من العملاء</li>
+            <li>تفاصيل المرسل والرسالة</li>
+            <li>حذف الرسائل</li>
+        </ul>
+
+        <h3>11. إعدادات الألوان (Colors Settings)</h3>
+        <div class="card">
+            <h4>🎨 تخصيص ألوان الموقع:</h4>
+            <p>نظام فريد يسمح بتخصيص ألوان الموقع بالكامل من لوحة التحكم:</p>
+            <ul class="feature-list">
+                <li>7 ألوان قابلة للتخصيص (primary, secondary, accent, text, background, إلخ)</li>
+                <li>Color Picker متقدم</li>
+                <li>معاينة حية للألوان</li>
+                <li>حفظ الألوان في قاعدة البيانات</li>
+                <li>تطبيق فوري على كامل الموقع</li>
+                <li>إعادة تعيين للألوان الافتراضية</li>
+            </ul>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 5
+        </div>
+    </div>
+
+    <!-- القسم 5: واجهة الموقع -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">واجهة الموقع الإلكتروني</h1>
+            <p class="page-number">القسم 5</p>
+        </div>
+
+        <h2>🌐 الصفحات الرئيسية</h2>
+
+        <h3>1. الصفحة الرئيسية (HomePage)</h3>
+        <div class="card">
+            <h4>📌 المكونات:</h4>
+            <ul class="feature-list">
+                <li>شريط إخباري متحرك (Marquee) في الأعلى</li>
+                <li>شريط التنقل الاحترافي (NavBar) مع Mega Menu</li>
+                <li>سلايدر رئيسي (Swiper) للعروض والمنتجات المميزة</li>
+                <li>قسم "تصفح حسب الفئة" مع صور الأقسام</li>
+                <li>قسم "أحدث المنتجات" مع بطاقات المنتجات</li>
+                <li>قسم "المنتجات المميزة"</li>
+                <li>قسم البراندات</li>
+                <li>Footer احترافي مع روابط التواصل</li>
+            </ul>
+        </div>
+
+        <h3>2. شريط التنقل (NavBar)</h3>
+        <div class="card">
+            <h4>✨ المميزات:</h4>
+            <ul class="feature-list">
+                <li>شعار المتجر (Logo)</li>
+                <li>قائمة تنقل رئيسية (الرئيسية، الأقسام، البراندات، العروض، الجديد، تواصل)</li>
+                <li>Mega Menu للأقسام مع الأقسام الفرعية</li>
+                <li>Dropdown للبراندات</li>
+                <li>أيقونة بحث مع نافذة بحث منبثقة</li>
+                <li>أيقونة المفضلة مع عداد</li>
+                <li>أيقونة السلة مع عداد</li>
+                <li>رابط واتساب مباشر</li>
+                <li>علم فلسطين 🇵🇸</li>
+                <li>Sticky Navbar عند التمرير</li>
+                <li>Responsive تماماً للموبايل</li>
+            </ul>
+        </div>
+
+        <h3>3. نظام البحث الذكي</h3>
+        <ul>
+            <li>نافذة بحث بملء الشاشة</li>
+            <li>بحث فوري أثناء الكتابة (Live Search)</li>
+            <li>معاينة النتائج مع الصور والأسعار</li>
+            <li>تأخير 500ms لتحسين الأداء</li>
+            <li>عرض حتى 8 نتائج</li>
+            <li>رسالة "لا توجد نتائج" عند عدم العثور</li>
+        </ul>
+
+        <h3>4. صفحة المنتجات (ProductsPage)</h3>
+        <ul>
+            <li>عرض جميع المنتجات في Grid</li>
+            <li>فلترة وترتيب (حسب السعر، الاسم، الأحدث)</li>
+            <li>Pagination</li>
+            <li>بطاقات منتجات احترافية مع تأثيرات Hover</li>
+        </ul>
+
+        <h3>5. صفحة تفاصيل المنتج (ProductDetailPage)</h3>
+        <div class="card">
+            <h4>🛍️ التفاصيل الكاملة:</h4>
+            <ul class="feature-list">
+                <li>صورة المنتج بحجم كبير</li>
+                <li>اسم المنتج ووصفه</li>
+                <li>السعر مع عرض الخصم إن وجد</li>
+                <li>اختيار المقاس (Checkboxes styled)</li>
+                <li>زر إضافة للسلة</li>
+                <li>زر إضافة للمفضلة مع أنيميشن قلب</li>
+                <li>معلومات إضافية (القسم، البراند، الحالة)</li>
+            </ul>
+        </div>
+
+        <h3>6. نظام المفضلة (Favorites)</h3>
+        <div class="card">
+            <h4>❤️ المميزات:</h4>
+            <ul class="feature-list">
+                <li>زر قلب في كل منتج مع أنيميشن HeartBeat</li>
+                <li>تلوين القلب باللون الأحمر عند الإضافة</li>
+                <li>تخزين في LocalStorage</li>
+                <li>صفحة مخصصة لعرض المفضلة</li>
+                <li>إزالة من المفضلة</li>
+                <li>مسح الكل</li>
+                <li>عداد في الـ NavBar</li>
+            </ul>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 6
+        </div>
+    </div>
+
+    <!-- القسم 6: نظام الطلبات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">نظام السلة والطلبات</h1>
+            <p class="page-number">القسم 6</p>
+        </div>
+
+        <h2>🛒 سلة المشتريات (Cart)</h2>
+        <div class="card">
+            <h4>📦 المميزات:</h4>
+            <ul class="feature-list">
+                <li>إضافة منتجات مع المقاس والكمية</li>
+                <li>تخزين في LocalStorage (تبقى حتى بعد إغلاق المتصفح)</li>
+                <li>عرض جميع المنتجات في صفحة السلة</li>
+                <li>صور المنتجات ومعلوماتها</li>
+                <li>التحكم بالكمية (زيادة/نقصان)</li>
+                <li>حذف منتج من السلة مع تأكيد</li>
+                <li>حساب المجموع الفرعي تلقائياً</li>
+                <li>عداد المنتجات في الـ NavBar</li>
+            </ul>
+        </div>
+
+        <h2>📝 نموذج إتمام الطلب</h2>
+        <div class="card">
+            <h4>✅ الحقول المطلوبة:</h4>
+            <ul>
+                <li><strong>الاسم الكامل:</strong> اسم العميل</li>
+                <li><strong>رقم الهاتف:</strong> للتواصل</li>
+                <li><strong>المدينة:</strong> اختيار من قائمة قابلة للبحث (@vueform/multiselect)</li>
+                <li><strong>العنوان التفصيلي:</strong> عنوان التوصيل</li>
+                <li><strong>ملاحظات إضافية:</strong> (اختياري)</li>
+            </ul>
+        </div>
+
+        <h3>🚚 حساب رسوم التوصيل</h3>
+        <ul>
+            <li>اختيار المدينة من قائمة قابلة للبحث</li>
+            <li>تحديث سعر التوصيل <strong>تلقائياً</strong> عند الاختيار</li>
+            <li>استخدام Watch للمراقبة الفورية</li>
+            <li>عرض المجموع الفرعي + التوصيل = الإجمالي</li>
+        </ul>
+
+        <h3>✉️ إرسال الطلب</h3>
+        <div class="code-block">
+POST /api/site/orders
+{
+    customer_name: "...",
+    customer_phone: "...",
+    city_id: 1,
+    address: "...",
+    description: "...",
+    items: [...],
+    subtotal: 100.00
+}
+
+// Response
+{
+    status: true,
+    message: "تم إنشاء الطلب بنجاح",
+    data: { order: {...} }
+}
+        </div>
+
+        <ul>
+            <li>التحقق من صحة البيانات</li>
+            <li>حساب سعر التوصيل من المدينة</li>
+            <li>حساب الإجمالي</li>
+            <li>حفظ الطلب في قاعدة البيانات</li>
+            <li>تفريغ السلة بعد الإرسال</li>
+            <li>رسالة نجاح مع إعادة توجيه للصفحة الرئيسية</li>
+        </ul>
+
+        <h2>📊 إدارة الطلبات من لوحة التحكم</h2>
+        <div class="card">
+            <h4>🎛️ الوظائف:</h4>
+            <ul class="feature-list">
+                <li>عرض جميع الطلبات في جدول</li>
+                <li>بحث بالاسم/الهاتف/رقم الطلب</li>
+                <li>فلترة حسب الحالة</li>
+                <li>عرض تفاصيل الطلب الكاملة</li>
+                <li>تحديث حالة الطلب (انتظار → معالجة → مكتمل / ملغي)</li>
+                <li>طباعة فاتورة احترافية</li>
+                <li>حذف الطلب</li>
+            </ul>
+        </div>
+
+        <h3>🖨️ طباعة الفاتورة</h3>
+        <p>صفحة HTML احترافية جاهزة للطباعة تحتوي على:</p>
+        <ul>
+            <li>Header فخم مع معلومات الشركة</li>
+            <li>رقم الطلب وحالته</li>
+            <li>معلومات العميل (الاسم، الهاتف، المدينة، العنوان)</li>
+            <li>جدول المنتجات مع التفاصيل</li>
+            <li>حساب المجموع الفرعي + التوصيل = الإجمالي</li>
+            <li>Footer مع شكر للعميل</li>
+            <li>تصميم print-friendly</li>
+        </ul>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 7
+        </div>
+    </div>
+
+    <!-- القسم 7: قاعدة البيانات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">هيكل قاعدة البيانات</h1>
+            <p class="page-number">القسم 7</p>
+        </div>
+
+        <h2>🗄️ الجداول الرئيسية</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الجدول</th>
+                        <th>الوصف</th>
+                        <th>الحقول الرئيسية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>admins</strong></td>
+                        <td>المسؤولون</td>
+                        <td>name, email, password</td>
+                    </tr>
+                    <tr>
+                        <td><strong>users</strong></td>
+                        <td>المستخدمون</td>
+                        <td>name, email, password</td>
+                    </tr>
+                    <tr>
+                        <td><strong>categories</strong></td>
+                        <td>الأقسام الرئيسية</td>
+                        <td>title, image, is_visible, order</td>
+                    </tr>
+                    <tr>
+                        <td><strong>sub_categories</strong></td>
+                        <td>الأقسام الفرعية</td>
+                        <td>title, category_id, order</td>
+                    </tr>
+                    <tr>
+                        <td><strong>brands</strong></td>
+                        <td>البراندات</td>
+                        <td>name, image, description</td>
+                    </tr>
+                    <tr>
+                        <td><strong>sizes</strong></td>
+                        <td>المقاسات</td>
+                        <td>name (S, M, L, XL, XXL)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>products</strong></td>
+                        <td>المنتجات</td>
+                        <td>title, description, price, discount_price, quantity, category_id, sub_category_id, brand_id, sizes (JSON), image, is_available, is_new, is_featured</td>
+                    </tr>
+                    <tr>
+                        <td><strong>cities</strong></td>
+                        <td>المدن الفلسطينية</td>
+                        <td>name, delivery_price</td>
+                    </tr>
+                    <tr>
+                        <td><strong>orders</strong></td>
+                        <td>الطلبات</td>
+                        <td>customer_name, customer_phone, city_id, address, description, items (JSON), subtotal, delivery_price, total, status</td>
+                    </tr>
+                    <tr>
+                        <td><strong>colors</strong></td>
+                        <td>ألوان النظام</td>
+                        <td>name, value, label</td>
+                    </tr>
+                    <tr>
+                        <td><strong>sliders</strong></td>
+                        <td>شرائح العرض</td>
+                        <td>title, description, image, link, is_visible, order</td>
+                    </tr>
+                    <tr>
+                        <td><strong>faqs</strong></td>
+                        <td>الأسئلة الشائعة</td>
+                        <td>question, answer, is_visible, order</td>
+                    </tr>
+                    <tr>
+                        <td><strong>contacts</strong></td>
+                        <td>رسائل التواصل</td>
+                        <td>name, email, phone, subject, message</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>🔗 العلاقات بين الجداول</h2>
+
+        <div class="card">
+            <h4>📊 المنتجات (products):</h4>
+            <ul>
+                <li><strong>belongsTo</strong> Category → category_id</li>
+                <li><strong>belongsTo</strong> SubCategory → sub_category_id</li>
+                <li><strong>belongsTo</strong> Brand → brand_id</li>
+                <li><strong>sizes</strong> → JSON array [1, 2, 3]</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h4>📦 الطلبات (orders):</h4>
+            <ul>
+                <li><strong>belongsTo</strong> City → city_id</li>
+                <li><strong>items</strong> → JSON array [{product_id, product_name, price, quantity, size}, ...]</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h4>📂 الأقسام (categories):</h4>
+            <ul>
+                <li><strong>hasMany</strong> SubCategories</li>
+                <li><strong>hasMany</strong> Products</li>
+            </ul>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 8
+        </div>
+    </div>
+
+    <!-- القسم 8: API Endpoints -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">واجهات برمجة التطبيقات (API)</h1>
+            <p class="page-number">القسم 8</p>
+        </div>
+
+        <h2>🔓 API العامة (Public Routes)</h2>
+
+        <h3>🏠 الصفحة الرئيسية والتنقل</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/navigation</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/sliders</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/sub-categories</span>
+        </div>
+
+        <h3>📦 المنتجات</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/products</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/products/{id}</span>
+        </div>
+
+        <h3>📂 الأقسام</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/categories</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/categories/{id}</span>
+        </div>
+
+        <h3>🏷️ البراندات</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/brands</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/brands/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/brands/{id}/products</span>
+        </div>
+
+        <h3>🌆 المدن</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/cities</span>
+        </div>
+
+        <h3>🎨 الألوان</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/site/colors</span>
+        </div>
+
+        <h3>📧 التواصل</h3>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/site/contact</span>
+        </div>
+
+        <h3>🛒 الطلبات</h3>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/site/orders</span>
+        </div>
+
+        <div class="decorative-line"></div>
+
+        <h2>🔐 API المحمية (Admin Protected Routes)</h2>
+        <p><span class="badge">Sanctum Token Required</span></p>
+
+        <h3>🔑 المصادقة</h3>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/login</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/logout</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/me</span>
+        </div>
+
+        <h3>📊 الإحصائيات</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/dashboard/statistics</span>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 9
+        </div>
+    </div>
+
+    <!-- القسم 8 (تابع): API Admin CRUD -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">API المحمية - CRUD Operations</h1>
+            <p class="page-number">القسم 8 (تابع)</p>
+        </div>
+
+        <h3>🎞️ السلايدر (Sliders)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/sliders</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/sliders</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/sliders/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/sliders/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/sliders/{id}</span>
+        </div>
+
+        <h3>📂 الأقسام (Categories)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/categories</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/categories</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/categories/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/categories/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/categories/{id}</span>
+        </div>
+
+        <h3>📑 الأقسام الفرعية (Sub-Categories)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/sub-categories</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/sub-categories</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/sub-categories/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/sub-categories/{id}</span>
+        </div>
+
+        <h3>🏷️ البراندات (Brands)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/brands</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/brands</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/brands/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/brands/{id}</span>
+        </div>
+
+        <h3>📏 المقاسات (Sizes)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/sizes</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/sizes</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/sizes/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/sizes/{id}</span>
+        </div>
+
+        <h3>🌆 المدن (Cities)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/cities</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/cities</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/cities/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/cities/{id}</span>
+        </div>
+
+        <h3>📦 المنتجات (Products)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/products</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/products</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/products/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/products/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/products/{id}</span>
+        </div>
+
+        <h3>🛒 الطلبات (Orders)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/orders</span>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/orders/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/orders/{id}/status</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/orders/{id}</span>
+        </div>
+
+        <h3>🎨 الألوان (Colors)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/colors</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/colors/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/colors/update-all</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/colors/reset</span>
+        </div>
+
+        <h3>❓ الأسئلة الشائعة (FAQs)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/faqs</span>
+        </div>
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="route-path">/api/admin/faqs</span>
+        </div>
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <span class="route-path">/api/admin/faqs/{id}</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/faqs/{id}</span>
+        </div>
+
+        <h3>📧 رسائل التواصل (Contacts)</h3>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="route-path">/api/admin/contacts</span>
+        </div>
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <span class="route-path">/api/admin/contacts/{id}</span>
+        </div>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 10
+        </div>
+    </div>
+
+    <!-- القسم 9: الأمان -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">الأمان والحماية</h1>
+            <p class="page-number">القسم 9</p>
+        </div>
+
+        <h2>🔒 آليات الأمان المطبقة</h2>
+
+        <div class="card">
+            <h3>1. Laravel Sanctum Authentication</h3>
+            <p>نظام مصادقة قوي باستخدام توكنات Bearer:</p>
+            <ul>
+                <li>تسجيل دخول آمن بالبريد وكلمة المرور</li>
+                <li>توليد توكن API فريد لكل جلسة</li>
+                <li>تخزين آمن للتوكنات في قاعدة البيانات</li>
+                <li>إرسال التوكن في header مع كل طلب محمي</li>
+                <li>تسجيل خروج يحذف التوكن من قاعدة البيانات</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>2. حماية المسارات (Route Protection)</h3>
+            <p>جميع مسارات الإدارة محمية بـ middleware:</p>
+            <div class="code-block">
+Route::middleware('auth:sanctum')->group(function () {
+    // Admin routes here
+});
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>3. التحقق من البيانات (Validation)</h3>
+            <p>جميع البيانات الواردة يتم التحقق منها:</p>
+            <ul>
+                <li>التحقق من نوع البيانات</li>
+                <li>التحقق من الحقول المطلوبة</li>
+                <li>التحقق من صحة البريد الإلكتروني</li>
+                <li>التحقق من صحة أرقام الهواتف</li>
+                <li>رسائل خطأ واضحة بالعربية</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>4. حماية CSRF</h3>
+            <p>Laravel يوفر حماية تلقائية من هجمات CSRF</p>
+        </div>
+
+        <div class="card">
+            <h3>5. تشفير كلمات المرور</h3>
+            <p>جميع كلمات المرور مشفرة باستخدام bcrypt</p>
+        </div>
+
+        <div class="card">
+            <h3>6. رفع الملفات الآمن</h3>
+            <ul>
+                <li>التحقق من نوع الملفات المسموحة (images only)</li>
+                <li>تحديد حجم الملف الأقصى</li>
+                <li>تخزين آمن في مجلد storage</li>
+                <li>أسماء ملفات فريدة لتجنب الكتابة فوق الملفات</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>7. حماية من SQL Injection</h3>
+            <p>استخدام Eloquent ORM و Prepared Statements</p>
+        </div>
+
+        <div class="card">
+            <h3>8. حماية من XSS</h3>
+            <p>Laravel و Vue.js يقومان بـ escaping تلقائي للنصوص</p>
+        </div>
+
+        <h2>🛡️ أفضل الممارسات المطبقة</h2>
+        <ul class="feature-list">
+            <li>فصل Frontend عن Backend لزيادة الأمان</li>
+            <li>استخدام HTTPS في الإنتاج (Production)</li>
+            <li>عدم تخزين معلومات حساسة في LocalStorage</li>
+            <li>رسائل خطأ عامة للمستخدمين (لا تكشف معلومات حساسة)</li>
+            <li>تسجيل (Logging) لجميع عمليات الإدارة الحساسة</li>
+            <li>نسخ احتياطي دوري لقاعدة البيانات</li>
+        </ul>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 11
+        </div>
+    </div>
+
+    <!-- القسم 10: دليل التشغيل -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">دليل التشغيل والإعداد</h1>
+            <p class="page-number">القسم 10</p>
+        </div>
+
+        <h2>💻 متطلبات التشغيل</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المتطلب</th>
+                        <th>الإصدار المطلوب</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PHP</td>
+                        <td>8.3 أو أحدث</td>
+                    </tr>
+                    <tr>
+                        <td>MySQL</td>
+                        <td>8.0 أو أحدث</td>
+                    </tr>
+                    <tr>
+                        <td>Composer</td>
+                        <td>2.x</td>
+                    </tr>
+                    <tr>
+                        <td>Node.js</td>
+                        <td>20.x أو أحدث</td>
+                    </tr>
+                    <tr>
+                        <td>NPM</td>
+                        <td>10.x أو أحدث</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>⚙️ خطوات الإعداد</h2>
+
+        <h3>1️⃣ إعداد الواجهة الخلفية (Laravel)</h3>
+        <div class="code-block">
+# الانتقال إلى مجلد Laravel
+cd D:\localProjects\whiteStyle
+
+# تثبيت المكتبات
+composer install
+
+# إنشاء ملف .env
+cp .env.example .env
+
+# توليد مفتاح التطبيق
+php artisan key:generate
+
+# إعداد قاعدة البيانات في .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=whitestyle
+DB_USERNAME=root
+DB_PASSWORD=
+
+# تنفيذ Migrations
+php artisan migrate
+
+# تنفيذ Seeders (المدن، الألوان، Admin افتراضي)
+php artisan db:seed
+
+# إنشاء رابط التخزين
+php artisan storage:link
+
+# تشغيل السيرفر
+php artisan serve
+        </div>
+
+        <h3>2️⃣ إعداد الواجهة الأمامية (Vue.js)</h3>
+        <div class="code-block">
+# الانتقال إلى مجلد Vue
+cd D:\localProjects\whiteStyleVue
+
+# تثبيت المكتبات
+npm install
+
+# تشغيل التطبيق
+npm run dev
+
+# للنشر (Production Build)
+npm run build
+        </div>
+
+        <h3>3️⃣ بيانات الدخول الافتراضية</h3>
+        <div class="card">
+            <h4>🔑 لوحة التحكم:</h4>
+            <ul>
+                <li><strong>البريد الإلكتروني:</strong> admin@whitestyle.ps</li>
+                <li><strong>كلمة المرور:</strong> password</li>
+            </ul>
+            <p><span class="badge secondary">ملاحظة:</span> يُنصح بتغيير كلمة المرور فوراً بعد أول تسجيل دخول</p>
+        </div>
+
+        <h2>🌐 الروابط</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الصفحة</th>
+                        <th>الرابط</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>الموقع الإلكتروني</td>
+                        <td>http://localhost:5173</td>
+                    </tr>
+                    <tr>
+                        <td>لوحة التحكم</td>
+                        <td>http://localhost:5173/login</td>
+                    </tr>
+                    <tr>
+                        <td>Laravel API</td>
+                        <td>http://127.0.0.1:8000/api</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>📝 ملاحظات مهمة</h2>
+        <ul class="feature-list">
+            <li>تأكد من تشغيل كل من Laravel و Vue.js في نفس الوقت</li>
+            <li>Laravel يعمل على المنفذ 8000</li>
+            <li>Vue.js يعمل على المنفذ 5173</li>
+            <li>الصور تُخزّن في: public/storage</li>
+            <li>يجب تنفيذ php artisan storage:link مرة واحدة</li>
+            <li>قاعدة البيانات تحتوي على 80+ مدينة فلسطينية محملة مسبقاً</li>
+            <li>الألوان الافتراضية محملة ويمكن تخصيصها من /admin/colors</li>
+        </ul>
+
+        <div class="page-footer">
+            White Style - نظام إدارة متجر الأزياء | صفحة 12
+        </div>
+    </div>
+
+    <!-- الخاتمة -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">الخاتمة</h1>
+            <p class="page-number">الختام</p>
+        </div>
+
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h2 style="font-size: 2.5rem; color: #784734; margin-bottom: 2rem;">
+                🎉 تم تسليم المشروع بنجاح
+            </h2>
+            <p style="font-size: 1.3rem; line-height: 2;">
+                نشكركم على ثقتكم بنا في تطوير نظام <strong>White Style</strong>،
+                وقد تم العمل على هذا المشروع بأعلى معايير الجودة والاحترافية.
+            </p>
+            <div class="decorative-line"></div>
+        </div>
+
+        <h2>📋 ملخص ما تم إنجازه</h2>
+        <div class="grid">
+            <div class="grid-item">
+                <h4>13 موديل</h4>
+                <p>قاعدة بيانات كاملة</p>
+            </div>
+            <div class="grid-item">
+                <h4>70+ API</h4>
+                <p>واجهات برمجية شاملة</p>
+            </div>
+            <div class="grid-item">
+                <h4>25+ صفحة</h4>
+                <p>واجهات أمامية احترافية</p>
+            </div>
+            <div class="grid-item">
+                <h4>100% عربي</h4>
+                <p>دعم كامل للغة العربية</p>
+            </div>
+        </div>
+
+        <h2>✨ المميزات المسلّمة</h2>
+        <ul class="feature-list">
+            <li>لوحة تحكم شاملة مع إحصائيات تفاعلية</li>
+            <li>إدارة متقدمة للمنتجات والطلبات</li>
+            <li>واجهة موقع عصرية متجاوبة</li>
+            <li>نظام سلة ومفضلة ذكي</li>
+            <li>بحث متقدم مع معاينة فورية</li>
+            <li>نظام طباعة فواتير احترافي</li>
+            <li>تخصيص ألوان الموقع</li>
+            <li>80+ مدينة فلسطينية مع أسعار التوصيل</li>
+            <li>أمان محكم مع Laravel Sanctum</li>
+            <li>كود نظيف ومنظم وموثّق</li>
+        </ul>
+
+        <h2>📞 الدعم الفني</h2>
+        <div class="card">
+            <p style="font-size: 1.2rem;">
+                نحن متواجدون لمساعدتكم في أي استفسار أو دعم فني قد تحتاجونه.
+                <br><br>
+                <strong>لا تترددوا في التواصل معنا في أي وقت.</strong>
+            </p>
+        </div>
+
+        <div class="decorative-line"></div>
+
+        <div style="text-align: center; margin-top: 4rem;">
+            <h2 style="font-size: 2.5rem; color: #784734; margin-bottom: 1rem;">
+                شكراً لثقتكم
+            </h2>
+            <p style="font-size: 1.5rem; color: #666;">
+                نتمنى لكم التوفيق والنجاح الدائم
+            </p>
+            <div style="margin-top: 3rem;">
+                <span class="badge success" style="font-size: 1.2rem; padding: 1rem 2rem;">
+                    White Style - فلسطين 🇵🇸
+                </span>
+            </div>
+        </div>
+
+        <div class="page-footer" style="margin-top: 5rem;">
+            White Style - نظام إدارة متجر الأزياء | صفحة 13 (الأخيرة)
+        </div>
+    </div>
+
+    <!-- زر طباعة -->
+    <div class="no-print" style="position: fixed; bottom: 30px; left: 30px; z-index: 1000;">
+        <button onclick="window.print()" style="
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(120, 71, 52, 0.4);
+            font-family: 'Cairo', sans-serif;
+        ">
+            🖨️ طباعة التقرير كـ PDF
+        </button>
+    </div>
+
+</body>
+</html>

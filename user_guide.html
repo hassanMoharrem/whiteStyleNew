@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل استخدام متجر White Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== إعدادات عامة ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.8;
+            color: #1A1A1A;
+            background: #fff;
+            direction: rtl;
+        }
+
+        /* ===== إعدادات الطباعة ===== */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                padding: 0;
+                margin: 0;
+            }
+
+            .page-break {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .card, .step-card, .info-box {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            h2, h3 {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+        }
+
+        /* ===== صفحة الغلاف ===== */
+        .cover-page {
+            height: 100vh;
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 3rem;
+        }
+
+        .cover-logo {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .cover-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+            color: #ffffff;
+        }
+
+        .cover-subtitle {
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            color: #ffffff;
+        }
+
+        .cover-divider {
+            width: 200px;
+            height: 3px;
+            background: white;
+            margin: 2rem auto;
+        }
+
+        /* ===== الصفحات الداخلية ===== */
+        .content-page {
+            min-height: 100vh;
+            padding: 60px 80px;
+            background: #F8F8F8;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+            padding: 2rem 3rem;
+            margin: -60px -80px 3rem -80px;
+            border-bottom: 5px solid #784734;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #ffffff;
+        }
+
+        /* ===== العناوين ===== */
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #784734;
+            margin: 2.5rem 0 1.5rem 0;
+            padding-right: 1.5rem;
+            border-right: 5px solid #784734;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #666666;
+            margin: 2rem 0 1rem 0;
+        }
+
+        /* ===== النصوص ===== */
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1.2rem;
+            color: #333;
+            line-height: 2;
+        }
+
+        /* ===== البطاقات ===== */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-right: 5px solid #784734;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(120, 71, 52, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #784734;
+            margin-bottom: 0.8rem;
+        }
+
+        .step-description {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* ===== صناديق المعلومات ===== */
+        .info-box {
+            background: linear-gradient(135deg, #fff7ed 0%, #fff3e6 100%);
+            border: 2px solid #784734;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .info-box-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #784734;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box-text {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* ===== القوائم ===== */
+        ul {
+            margin: 1rem 0 1rem 2rem;
+        }
+
+        li {
+            font-size: 1.15rem;
+            margin-bottom: 1rem;
+            line-height: 1.9;
+            color: #333;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .feature-list li {
+            padding: 1rem 0 1rem 2.5rem;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            color: #784734;
+            font-weight: 900;
+            font-size: 1.4rem;
+        }
+
+        /* ===== الأيقونات ===== */
+        .icon {
+            font-size: 2rem;
+            display: inline-block;
+        }
+
+        /* ===== التذييل ===== */
+        .page-footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* ===== خط زخرفي ===== */
+        .decorative-line {
+            height: 3px;
+            background: linear-gradient(to left, transparent, #784734, transparent);
+            margin: 3rem 0;
+        }
+
+        /* ===== الشارات ===== */
+        .badge {
+            display: inline-block;
+            background: #784734;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0.3rem;
+        }
+
+        .badge.success {
+            background: #28a745;
+        }
+
+        .badge.info {
+            background: #17a2b8;
+        }
+
+        /* ===== تحسينات الطباعة ===== */
+        @media print {
+            .content-page {
+                padding: 40px 60px;
+            }
+
+            .page-header {
+                margin: -40px -60px 2rem -60px;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- صفحة الغلاف -->
+    <div class="cover-page">
+        <div class="cover-content">
+            <div class="cover-logo">🛍️</div>
+            <h1 class="cover-title">دليل استخدام متجر White Style</h1>
+            <p class="cover-subtitle">دليلك الكامل للتسوق والشراء من المتجر الإلكتروني</p>
+            <div class="cover-divider"></div>
+            <p style="font-size: 1.3rem; opacity: 0.9; color: #ffffff;">متجر الأزياء الرائد في فلسطين 🇵🇸</p>
+        </div>
+    </div>
+
+    <!-- المقدمة -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">مرحباً بكم في White Style</h1>
+            <p class="page-subtitle">متجركم الإلكتروني المفضل للأزياء العصرية</p>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0;">🌟 عن المتجر</h2>
+            <p>
+                <strong>White Style</strong> هو متجرك الإلكتروني المتخصص في توفير أحدث صيحات الموضة والأزياء العصرية
+                في فلسطين. نقدم لكم تجربة تسوق سهلة ومريحة مع توصيل سريع لجميع المدن الفلسطينية.
+            </p>
+        </div>
+
+        <h2>✨ مميزات التسوق معنا</h2>
+        <ul class="feature-list">
+            <li>تشكيلة واسعة من الملابس العصرية للرجال والنساء والأطفال</li>
+            <li>أسعار منافسة مع عروض وخصومات حصرية</li>
+            <li>توصيل سريع لجميع المدن الفلسطينية</li>
+            <li>سهولة في التصفح والبحث عن المنتجات</li>
+            <li>إمكانية حفظ المنتجات المفضلة</li>
+            <li>عملية شراء بسيطة وآمنة</li>
+            <li>دعم فني متواصل عبر واتساب</li>
+        </ul>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">💡</span>
+                نصيحة مهمة
+            </div>
+            <p class="info-box-text">
+                يمكنك تصفح المتجر من أي جهاز (كمبيوتر، تابلت، موبايل). الموقع مصمم ليعمل بشكل مثالي على جميع الأجهزة!
+            </p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 1
+        </div>
+    </div>
+
+    <!-- الصفحة الرئيسية -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">التعرف على الموقع</h1>
+            <p class="page-subtitle">جولة في أقسام الموقع الإلكتروني</p>
+        </div>
+
+        <h2>🏠 الصفحة الرئيسية</h2>
+        <p>عند زيارتك للموقع، ستجد:</p>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">شريط التنقل العلوي</div>
+                <div class="step-description">
+                    يحتوي على شعار المتجر، قائمة الأقسام، البراندات، وأيقونات البحث، المفضلة، السلة، وواتساب للتواصل المباشر.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">السلايدر الرئيسي</div>
+                <div class="step-description">
+                    عروض ترويجية وصور للمنتجات المميزة تتغير تلقائياً لعرض أحدث المنتجات والعروض الخاصة.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">تصفح حسب الفئة</div>
+                <div class="step-description">
+                    أقسام المنتجات المختلفة (رجالي، نسائي، أطفال، إكسسوارات، إلخ) مع صور جذابة لسهولة الاختيار.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <div class="step-title">أحدث المنتجات</div>
+                <div class="step-description">
+                    عرض لأحدث المنتجات المضافة للمتجر مع السعر والصورة وإمكانية الإضافة السريعة.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <div class="step-title">المنتجات المميزة</div>
+                <div class="step-description">
+                    قسم خاص بالمنتجات المختارة بعناية والأكثر مبيعاً في المتجر.
+                </div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 2
+        </div>
+    </div>
+
+    <!-- البحث عن المنتجات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">البحث والتصفح</h1>
+            <p class="page-subtitle">كيف تجد ما تبحث عنه بسهولة</p>
+        </div>
+
+        <h2>🔍 البحث عن المنتجات</h2>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">فتح نافذة البحث</div>
+                <div class="step-description">
+                    اضغط على أيقونة البحث 🔍 في شريط التنقل العلوي لفتح نافذة البحث.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">اكتب اسم المنتج</div>
+                <div class="step-description">
+                    ابدأ بكتابة اسم المنتج أو الكلمة المفتاحية التي تبحث عنها.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">النتائج الفورية</div>
+                <div class="step-description">
+                    ستظهر لك النتائج مباشرة أثناء الكتابة مع صور المنتجات والأسعار. اضغط على أي منتج لمشاهدة التفاصيل.
+                </div>
+            </div>
+        </div>
+
+        <h2>📂 التصفح حسب الأقسام</h2>
+
+        <div class="card">
+            <p><strong>يمكنك تصفح المنتجات بعدة طرق:</strong></p>
+            <ul>
+                <li><strong>من قائمة الأقسام:</strong> اضغط على "الأقسام" في القائمة العلوية واختر القسم المطلوب</li>
+                <li><strong>من البراندات:</strong> اضغط على "البراندات" واختر العلامة التجارية المفضلة لديك</li>
+                <li><strong>المنتجات الجديدة:</strong> شاهد آخر الإضافات من قسم "الجديد"</li>
+                <li><strong>العروض الخاصة:</strong> تابع قسم "العروض" للحصول على أفضل الخصومات</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">💡</span>
+                نصيحة للبحث الأفضل
+            </div>
+            <p class="info-box-text">
+                استخدم كلمات بسيطة في البحث مثل: "قميص رجالي"، "فستان"، "حذاء رياضي".
+                كلما كانت الكلمة أبسط، كانت النتائج أدق!
+            </p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 3
+        </div>
+    </div>
+
+    <!-- تفاصيل المنتج -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">معلومات المنتج</h1>
+            <p class="page-subtitle">كل ما تحتاج معرفته عن المنتج</p>
+        </div>
+
+        <h2>📦 صفحة تفاصيل المنتج</h2>
+        <p>عند الضغط على أي منتج، ستجد الصفحة التفصيلية التي تحتوي على:</p>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">صورة المنتج بحجم كبير</div>
+                <div class="step-description">
+                    صورة واضحة وكبيرة للمنتج لرؤية جميع التفاصيل.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">اسم المنتج والوصف</div>
+                <div class="step-description">
+                    اسم المنتج ووصف تفصيلي يشرح المميزات والخامات والمواصفات.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">السعر والخصم</div>
+                <div class="step-description">
+                    السعر الأساسي. إذا كان هناك خصم، ستجد السعر القديم مشطوب والسعر الجديد بعد الخصم.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <div class="step-title">اختيار المقاس</div>
+                <div class="step-description">
+                    المقاسات المتوفرة (S, M, L, XL, XXL). اختر المقاس المناسب لك بالضغط عليه.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <div class="step-title">معلومات إضافية</div>
+                <div class="step-description">
+                    القسم، البراند، حالة التوفر، وشارات "جديد" أو "مميز" إن وُجدت.
+                </div>
+            </div>
+        </div>
+
+        <h2>🛒 الإجراءات المتاحة</h2>
+        <div class="card">
+            <ul class="feature-list">
+                <li><strong>إضافة إلى السلة:</strong> لشراء المنتج</li>
+                <li><strong>إضافة إلى المفضلة ❤️:</strong> لحفظ المنتج للمشاهدة لاحقاً</li>
+            </ul>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 4
+        </div>
+    </div>
+
+    <!-- المفضلة -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">قائمة المفضلة</h1>
+            <p class="page-subtitle">احفظ منتجاتك المفضلة للعودة إليها لاحقاً</p>
+        </div>
+
+        <h2>❤️ كيفية استخدام المفضلة</h2>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">إضافة منتج للمفضلة</div>
+                <div class="step-description">
+                    اضغط على أيقونة القلب ❤️ الموجودة على بطاقة المنتج أو في صفحة تفاصيل المنتج.
+                    سيتغير لون القلب إلى الأحمر مع رسوم متحركة جميلة.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">مشاهدة المفضلة</div>
+                <div class="step-description">
+                    اضغط على أيقونة القلب في شريط التنقل العلوي. ستظهر رقم يدل على عدد المنتجات المحفوظة.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">إدارة المفضلة</div>
+                <div class="step-description">
+                    في صفحة المفضلة، يمكنك:
+                    <ul style="margin-top: 0.5rem;">
+                        <li>مشاهدة جميع منتجاتك المفضلة</li>
+                        <li>إزالة منتج معين من المفضلة</li>
+                        <li>مسح جميع المفضلة بضغطة واحدة</li>
+                        <li>الانتقال لصفحة المنتج للشراء</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">💡</span>
+                ميزة رائعة
+            </div>
+            <p class="info-box-text">
+                المفضلة محفوظة في جهازك! حتى لو أغلقت المتصفح أو أطفأت الجهاز،
+                ستبقى منتجاتك المفضلة موجودة عند العودة للموقع.
+            </p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 5
+        </div>
+    </div>
+
+    <!-- سلة المشتريات -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">سلة المشتريات</h1>
+            <p class="page-subtitle">إدارة مشترياتك قبل إتمام الطلب</p>
+        </div>
+
+        <h2>🛒 كيفية استخدام السلة</h2>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">إضافة منتج للسلة</div>
+                <div class="step-description">
+                    <ol style="margin-top: 0.5rem;">
+                        <li>اختر المقاس المطلوب من صفحة المنتج</li>
+                        <li>اضغط على زر "أضف إلى السلة"</li>
+                        <li>ستظهر رسالة تأكيد بنجاح الإضافة</li>
+                        <li>سيزيد العداد على أيقونة السلة في الأعلى</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">مشاهدة السلة</div>
+                <div class="step-description">
+                    اضغط على أيقونة السلة 🛒 في شريط التنقل العلوي للانتقال إلى صفحة السلة.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">إدارة محتويات السلة</div>
+                <div class="step-description">
+                    في صفحة السلة يمكنك:
+                    <ul style="margin-top: 0.5rem;">
+                        <li><strong>مشاهدة المنتجات:</strong> جميع المنتجات المضافة مع الصور والأسعار</li>
+                        <li><strong>تغيير الكمية:</strong> زيادة أو تقليل عدد القطع باستخدام أزرار + و -</li>
+                        <li><strong>حذف منتج:</strong> إزالة منتج معين من السلة</li>
+                        <li><strong>المجموع الكلي:</strong> حساب تلقائي للمبلغ الإجمالي</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">💡</span>
+                ملاحظة مهمة
+            </div>
+            <p class="info-box-text">
+                السلة محفوظة في جهازك! يمكنك إضافة المنتجات والعودة لاحقاً لإكمال الطلب
+                دون القلق من فقدان مشترياتك.
+            </p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 6
+        </div>
+    </div>
+
+    <!-- إتمام الطلب -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">إتمام عملية الشراء</h1>
+            <p class="page-subtitle">الخطوات النهائية لاستلام طلبك</p>
+        </div>
+
+        <h2>✅ خطوات إكمال الطلب</h2>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">مراجعة السلة</div>
+                <div class="step-description">
+                    تأكد من أن جميع المنتجات والمقاسات والكميات صحيحة في سلتك.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">ملء بيانات التوصيل</div>
+                <div class="step-description">
+                    في صفحة السلة، ستجد نموذج إكمال الطلب. املأ المعلومات التالية:
+                    <ul style="margin-top: 0.5rem;">
+                        <li><strong>الاسم الكامل:</strong> اسمك الثلاثي أو الرباعي</li>
+                        <li><strong>رقم الهاتف:</strong> رقم جوالك للتواصل معك</li>
+                        <li><strong>المدينة:</strong> اختر مدينتك من القائمة (يمكنك البحث عن اسم المدينة)</li>
+                        <li><strong>العنوان التفصيلي:</strong> عنوانك الكامل (اسم الشارع، رقم البناية، أي معالم بارزة)</li>
+                        <li><strong>ملاحظات:</strong> (اختياري) أي ملاحظات إضافية للتوصيل</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">حساب رسوم التوصيل</div>
+                <div class="step-description">
+                    بمجرد اختيار المدينة، سيتم حساب رسوم التوصيل تلقائياً وإضافتها للمبلغ الإجمالي.
+                    ستجد المبلغ موضح كالتالي:
+                    <ul style="margin-top: 0.5rem;">
+                        <li>المجموع الفرعي (قيمة المنتجات)</li>
+                        <li>رسوم التوصيل (حسب المدينة)</li>
+                        <li>المجموع النهائي (المبلغ الكلي المطلوب)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <div class="step-title">إرسال الطلب</div>
+                <div class="step-description">
+                    بعد التأكد من صحة جميع البيانات، اضغط على زر "إتمام الطلب".
+                    ستظهر رسالة تأكيد بنجاح إرسال الطلب.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <div class="step-title">متابعة الطلب</div>
+                <div class="step-description">
+                    سيتم التواصل معك خلال 24 ساعة عبر رقم الهاتف المسجل لتأكيد الطلب وترتيب التوصيل.
+                </div>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 7
+        </div>
+    </div>
+
+    <!-- معلومات التوصيل والدفع -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">التوصيل والدفع</h1>
+            <p class="page-subtitle">معلومات مهمة عن توصيل طلبك</p>
+        </div>
+
+        <h2>🚚 سياسة التوصيل</h2>
+
+        <div class="card">
+            <h3>مدة التوصيل</h3>
+            <ul>
+                <li><strong>داخل المدن الرئيسية:</strong> 1-2 يوم عمل</li>
+                <li><strong>المناطق البعيدة:</strong> 2-4 أيام عمل</li>
+                <li><strong>حالات خاصة:</strong> قد تختلف المدة حسب الظروف والأعياد</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>رسوم التوصيل</h3>
+            <p>تختلف رسوم التوصيل حسب المدينة، وسيتم عرضها لك تلقائياً عند اختيار المدينة في نموذج الطلب.</p>
+            <ul>
+                <li>المدن الرئيسية (رام الله، نابلس، الخليل، إلخ): رسوم منخفضة</li>
+                <li>المناطق البعيدة: رسوم معتدلة</li>
+                <li>الرسوم واضحة ومعلنة قبل إتمام الطلب</li>
+            </ul>
+        </div>
+
+        <h2>💰 طرق الدفع</h2>
+
+        <div class="card">
+            <h3>الدفع عند الاستلام</h3>
+            <p>
+                <span class="badge success">الطريقة الوحيدة حالياً</span>
+            </p>
+            <p style="margin-top: 1rem;">
+                نعتمد حالياً على نظام <strong>الدفع عند الاستلام (Cash on Delivery)</strong> فقط.
+                هذا يعني أنك لن تدفع أي مبلغ عند الطلب عبر الموقع،
+                بل ستدفع المبلغ الكامل لموظف التوصيل عند استلام المنتجات.
+            </p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">⚠️</span>
+                تنبيه مهم
+            </div>
+            <p class="info-box-text">
+                يرجى التأكد من توفر المبلغ الكامل (قيمة المنتجات + رسوم التوصيل) نقداً
+                عند استلام الطلب. موظف التوصيل لن يقبل بطاقات الدفع الإلكتروني.
+            </p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 8
+        </div>
+    </div>
+
+    <!-- التواصل والدعم -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">التواصل معنا</h1>
+            <p class="page-subtitle">نحن هنا لمساعدتك في أي وقت</p>
+        </div>
+
+        <h2>📞 طرق التواصل</h2>
+
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <div class="step-title">واتساب</div>
+                <div class="step-description">
+                    الطريقة الأسرع! اضغط على أيقونة الواتساب في شريط التنقل العلوي للتواصل المباشر معنا.
+                    يمكنك الاستفسار عن المنتجات، حالة الطلب، أو أي شيء تحتاجه.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <div class="step-title">الهاتف</div>
+                <div class="step-description">
+                    للاستفسارات والطلبات الهاتفية: <strong>+970 599 999 999</strong>
+                    <br>
+                    نستقبل مكالماتكم من السبت إلى الخميس (9 صباحاً - 6 مساءً)
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <div class="step-title">البريد الإلكتروني</div>
+                <div class="step-description">
+                    للاستفسارات والاقتراحات: <strong>info@whitestyle.ps</strong>
+                    <br>
+                    سنرد على رسالتك خلال 24 ساعة كحد أقصى
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <div class="step-title">نموذج التواصل</div>
+                <div class="step-description">
+                    اضغط على "تواصل معنا" في الموقع واملأ النموذج.
+                    سنرد عليك في أقرب وقت ممكن.
+                </div>
+            </div>
+        </div>
+
+        <h2>❓ الأسئلة الشائعة</h2>
+
+        <div class="card">
+            <h3>كيف أتتبع طلبي؟</h3>
+            <p>بعد إرسال الطلب، سيتم التواصل معك عبر الهاتف لتأكيد الطلب وإعلامك بموعد التوصيل المتوقع.</p>
+        </div>
+
+        <div class="card">
+            <h3>هل يمكنني إلغاء أو تعديل الطلب؟</h3>
+            <p>نعم، يمكنك التواصل معنا فوراً عبر الواتساب أو الهاتف لتعديل أو إلغاء الطلب قبل شحنه.</p>
+        </div>
+
+        <div class="card">
+            <h3>ماذا لو لم يعجبني المنتج؟</h3>
+            <p>يمكنك إرجاع المنتج خلال 7 أيام من الاستلام إذا كان بحالة جيدة ولم يُستخدم.
+            تواصل معنا لترتيب الإرجاع.</p>
+        </div>
+
+        <div class="card">
+            <h3>هل المنتجات أصلية ومضمونة؟</h3>
+            <p>نعم، جميع منتجاتنا أصلية 100% ونضمن لك الجودة العالية.</p>
+        </div>
+
+        <div class="page-footer">
+            White Style - دليل الاستخدام | صفحة 9
+        </div>
+    </div>
+
+    <!-- الختام -->
+    <div class="content-page page-break">
+        <div class="page-header">
+            <h1 class="page-title">شكراً لاختيارك White Style</h1>
+            <p class="page-subtitle">نتمنى لك تجربة تسوق ممتعة</p>
+        </div>
+
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h2 style="font-size: 2.5rem; color: #784734; margin-bottom: 2rem;">
+                🎉 نحن سعداء بخدمتك
+            </h2>
+            <p style="font-size: 1.3rem; line-height: 2;">
+                شكراً لثقتك في <strong>White Style</strong>. نحن نعمل بجد لنوفر لك
+                أفضل تجربة تسوق ممكنة مع أحدث صيحات الموضة والأزياء العصرية.
+            </p>
+            <div class="decorative-line"></div>
+        </div>
+
+        <h2>✨ نصائح أخيرة لتجربة أفضل</h2>
+
+        <ul class="feature-list">
+            <li>تابعنا على وسائل التواصل الاجتماعي لمعرفة أحدث العروض والمنتجات</li>
+            <li>اشترك في القائمة البريدية للحصول على خصومات حصرية</li>
+            <li>استخدم المفضلة لحفظ المنتجات التي تعجبك</li>
+            <li>تصفح الموقع من جوالك - التطبيق يعمل بشكل ممتاز على الموبايل</li>
+            <li>لا تتردد في التواصل معنا لأي استفسار</li>
+        </ul>
+
+        <div class="info-box">
+            <div class="info-box-title">
+                <span class="icon">🎁</span>
+                عروض حصرية قادمة
+            </div>
+            <p class="info-box-text">
+                ترقب عروضنا الموسمية والخصومات الخاصة!
+                سجّل بريدك الإلكتروني أو تابعنا على وسائل التواصل لتكون أول من يعرف.
+            </p>
+        </div>
+
+        <div class="decorative-line"></div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <h2 style="font-size: 2.5rem; color: #784734; margin-bottom: 1rem;">
+                تسوق سعيد!
+            </h2>
+            <p style="font-size: 1.5rem; color: #666;">
+                White Style - أزياء عصرية لكل المناسبات
+            </p>
+            <div style="margin-top: 2rem;">
+                <span class="badge" style="font-size: 1.2rem; padding: 0.8rem 1.8rem;">
+                    🇵🇸 فخورون بخدمة فلسطين
+                </span>
+            </div>
+        </div>
+
+        <div class="page-footer" style="margin-top: 5rem;">
+            White Style - دليل الاستخدام | الصفحة الأخيرة
+        </div>
+    </div>
+
+    <!-- زر طباعة -->
+    <div class="no-print" style="position: fixed; bottom: 30px; left: 30px; z-index: 1000;">
+        <button onclick="window.print()" style="
+            background: linear-gradient(135deg, #784734 0%, #5a3426 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(120, 71, 52, 0.4);
+            font-family: 'Cairo', sans-serif;
+        ">
+            🖨️ طباعة الدليل
+        </button>
+    </div>
+
+</body>
+</html>
