@@ -38,7 +38,7 @@ class Product extends Model
         return array_map(function ($image) {
             return [
                 'name' => $image['name'],
-                'url'  => asset('storage/' . $image['url']),
+                'url'  => asset($image['url']),
             ];
         }, $this->images);
     }
@@ -57,7 +57,7 @@ class Product extends Model
         }
 
         $firstImage = $this->images[0];
-        return asset('storage/' . $firstImage['url']);
+        return asset($firstImage['url']);
     }
 
     public function subCategory()
