@@ -16,22 +16,22 @@ class ColorSeeder extends Seeder
         $colors = [
             [
                 'name' => 'color-primary',
-                'value' => '#784734',
+                'value' => '#ffffff',
                 'label' => 'اللون الأساسي',
             ],
             [
                 'name' => 'color-secondary',
-                'value' => '#ffffff',
+                'value' => '#bd2233',
                 'label' => 'اللون الثانوي',
             ],
             [
                 'name' => 'color-accent',
-                'value' => '#d4af37',
+                'value' => '#2b2b2b',
                 'label' => 'لون التمييز',
             ],
             [
                 'name' => 'color-text',
-                'value' => '#2c3e50',
+                'value' => '#ffffff',
                 'label' => 'لون النص الأساسي',
             ],
             [
