@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             BrandSeeder::class,
             SizeSeeder::class,
             ProductSeeder::class,
+            CitySeeder::class,
             ColorSeeder::class
         ]);
     }
