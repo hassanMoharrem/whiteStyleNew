@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\Site\BrandController as SiteBrandController;
 use App\Http\Controllers\Api\Site\ContactController as SiteContactController;
 use App\Http\Controllers\Api\Site\CategoryController as SiteCategoryController;
 use App\Http\Controllers\Api\Site\OrderController as SiteOrderController;
+use App\Http\Controllers\Api\Site\CitiesController;
+
 use Illuminate\Support\Facades\Route;
 
 // Public Site Routes
@@ -36,6 +38,7 @@ Route::get('/site/brands/{id}/products', [SiteBrandController::class, 'products'
 Route::post('/site/contact', [SiteContactController::class, 'store']);
 Route::get('/site/cities', [SiteOrderController::class, 'getCities']);
 Route::post('/site/orders', [SiteOrderController::class, 'store']);
+Route::get('/site/cities/all', [CitiesController::class, 'index']);
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
