@@ -87,6 +87,8 @@ Route::prefix('admin')->group(function () {
         Route::get('orders/{order}', [OrderController::class, 'show']);
         Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
         Route::delete('orders/{order}', [OrderController::class, 'destroy']);
+        // print
+        Route::get('orders/{order}/print', [OrderController::class, 'print']);
 
         // Colors
         Route::get('colors', [AdminColorController::class, 'index']);
