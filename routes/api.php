@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\Site\ContactController as SiteContactController;
 use App\Http\Controllers\Api\Site\CategoryController as SiteCategoryController;
 use App\Http\Controllers\Api\Site\OrderController as SiteOrderController;
 use App\Http\Controllers\Api\Site\CitiesController;
-
+use App\Http\Controllers\Api\Site\SubscribeController;
 use Illuminate\Support\Facades\Route;
 
 // Public Site Routes
@@ -39,6 +39,7 @@ Route::post('/site/contact', [SiteContactController::class, 'store']);
 Route::get('/site/cities', [SiteOrderController::class, 'getCities']);
 Route::post('/site/orders', [SiteOrderController::class, 'store']);
 Route::get('/site/cities/all', [CitiesController::class, 'index']);
+Route::post('/site/subscribe', [SubscribeController::class, 'store']);
 
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
@@ -92,5 +93,10 @@ Route::prefix('admin')->group(function () {
         Route::put('colors/{color}', [AdminColorController::class, 'update']);
         Route::post('colors/update-all', [AdminColorController::class, 'updateAll']);
         Route::post('colors/reset', [AdminColorController::class, 'reset']);
+
+        // Subscribes
+        Route::get('subscribes', [App\Http\Controllers\Api\Admin\SubscribeController::class, 'index']);
+        Route::delete('subscribes/{subscribe}', [App\Http\Controllers\Api\Admin\SubscribeController::class, 'destroy']);
+
     });
 });
