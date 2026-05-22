@@ -9,7 +9,9 @@ class Order extends Model
     protected $fillable = [
         'customer_name',
         'customer_phone',
-        'city_id',
+        'city_name',
+        'area_name',
+        'street_name',
         'address',
         'description',
         'items',
@@ -26,8 +28,5 @@ class Order extends Model
         'total' => 'decimal:2',
     ];
 
-    public function city()
-    {
-        return $this->belongsTo(City::class);
-    }
+    // تم حذف علاقة city لأن city_id لم يعد موجودًا
 }

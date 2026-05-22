@@ -18,7 +18,9 @@ class OrderController extends Controller
         $validator = Validator::make($request->all(), [
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
-            'city_id' => 'required|exists:cities,id',
+            'city_name' => 'required|string|max:255',
+            'area_name' => 'required|string|max:255',
+            'street_name' => 'required|string|max:255',
             'address' => 'required|string',
             'description' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -32,8 +34,9 @@ class OrderController extends Controller
         ], [
             'customer_name.required' => 'الاسم مطلوب',
             'customer_phone.required' => 'رقم الهاتف مطلوب',
-            'city_id.required' => 'المدينة مطلوبة',
-            'city_id.exists' => 'المدينة غير موجودة',
+            'city_name.required' => 'المدينة مطلوبة',
+            'area_name.required' => 'المنطقة مطلوبة',
+            'street_name.required' => 'الشارع مطلوب',
             'address.required' => 'العنوان مطلوب',
             'items.required' => 'يجب إضافة منتجات للطلب',
             'items.min' => 'يجب إضافة منتج واحد على الأقل',
@@ -47,14 +50,16 @@ class OrderController extends Controller
         }
 
         // Get city to calculate delivery price
-        $city = City::find($request->city_id);
-        $deliveryPrice = $city->delivery_price;
+        // $city = City::where('name', $request->city_name)->first();
+        $deliveryPrice = 25; // Default delivery price
         $total = $request->subtotal + $deliveryPrice;
 
         $order = Order::create([
             'customer_name' => $request->customer_name,
             'customer_phone' => $request->customer_phone,
-            'city_id' => $request->city_id,
+            'city_name' => $request->city_name,
+            'area_name' => $request->area_name,
+            'street_name' => $request->street_name,
             'address' => $request->address,
             'description' => $request->description,
             'items' => $request->items,
@@ -66,7 +71,7 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'data' => ['order' => $order->load('city')],
+            'data' => ['order' => $order],
             'message' => 'تم إنشاء الطلب بنجاح'
         ], 201);
     }

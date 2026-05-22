@@ -13,7 +13,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Order::with('city');
+        $query = Order::query();
 
         // Search by customer name, phone, or order ID
         if ($request->has('search')) {
@@ -53,7 +53,7 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with('city')->find($id);
+        $order = Order::query()->find($id);
 
         if (!$order) {
             return response()->json([
@@ -125,7 +125,7 @@ class OrderController extends Controller
      */
     public function print($id)
     {
-        $order = Order::with('city')->find($id);
+        $order = Order::query()->find($id);
 
         if (!$order) {
             abort(404, 'الطلب غير موجود');

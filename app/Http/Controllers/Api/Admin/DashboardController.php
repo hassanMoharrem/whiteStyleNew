@@ -24,7 +24,7 @@ class DashboardController extends Controller
 
         $totalProducts = Product::count();
         $totalCategories = Category::count();
-        $totalCities = City::count();
+        $totalCities = Order::select('city_name')->distinct()->count();
         $totalBrands = Brand::count();
 
         // المبيعات
@@ -67,7 +67,7 @@ class DashboardController extends Controller
         }
 
         // أحدث الطلبات
-        $recentOrders = Order::with('city')
+        $recentOrders = Order::query()
             ->latest()
             ->take(5)
             ->get()
@@ -82,20 +82,11 @@ class DashboardController extends Controller
             });
 
         // أفضل 5 مدن مبيعاً
-        $topCities = Order::where('status', 'completed')
-            ->select('city_id', DB::raw('SUM(total) as total_sales'), DB::raw('COUNT(*) as orders_count'))
-            ->groupBy('city_id')
-            ->with('city:id,name')
-            ->orderBy('total_sales', 'desc')
+        $topCities = Order::select('city_name', DB::raw('COUNT(*) as total_orders'))
+            ->groupBy('city_name')
+            ->orderByDesc('total_orders')
             ->take(5)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'city_name' => $item->city->name ?? 'غير محدد',
-                    'total_sales' => (float) $item->total_sales,
-                    'orders_count' => $item->orders_count
-                ];
-            });
+            ->get();
 
         return response()->json([
             'status' => true,

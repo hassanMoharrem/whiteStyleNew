@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\FaqController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\ColorController as AdminColorController;
+use App\Http\Controllers\Api\SabeqController;
 use App\Http\Controllers\Api\Site\NavigationController;
 use App\Http\Controllers\Api\Site\ColorController as SiteColorController;
 use App\Http\Controllers\Api\Site\ProductController as SiteProductController;
@@ -40,7 +41,7 @@ Route::get('/site/cities', [SiteOrderController::class, 'getCities']);
 Route::post('/site/orders', [SiteOrderController::class, 'store']);
 Route::get('/site/cities/all', [CitiesController::class, 'index']);
 Route::post('/site/subscribe', [SubscribeController::class, 'store']);
-
+Route::get('/sabeq/areas', [SabeqController::class, 'areas']);
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
 
