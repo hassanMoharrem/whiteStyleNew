@@ -135,6 +135,9 @@ class OrderController extends Controller
                 'message' => 'خطأ في إلغاء الطلب من سابق: ' . $e->getMessage()
             ], 500);
         }
+        $order->update([
+            'status' => 'cancelled'
+        ]);
         return response()->json([
             'status' => true,
             'data' => ['parcel' => $sabeqResponse],
