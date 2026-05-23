@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Services\SabeqService;
 
 class OrderController extends Controller
 {
@@ -68,12 +69,77 @@ class OrderController extends Controller
             'total' => $total,
             'status' => 'pending',
         ]);
+        $area_id = $request->area_id; // Assuming area_name is the ID of the area in Sabeq
+        $street_id = $request->street_id; // Assuming street_name is the ID of the street in Sabeq
+
+        $sabeq = new SabeqService();
+
+        $sabeqResponse = $sabeq->createParcel($order , $area_id , $street_id);
+
+        if (isset($sabeqResponse['track_number'])) {
+            $order->update([
+                'track_number' => $sabeqResponse['track_number'],
+                'delivery_price' => $sabeqResponse['delivery_cost'],
+            ]);
+        }
 
         return response()->json([
             'status' => true,
             'data' => ['order' => $order],
             'message' => 'تم إنشاء الطلب بنجاح'
         ], 201);
+    }
+
+    /**
+     * Get order information     */
+    public function informationParcel($orderId,$trackNumber)
+    {
+        $order = Order::where('id', $orderId)->where('track_number', $trackNumber)->first();
+        if(!$order){
+            return response()->json([
+            'status' => false,
+            'message' => 'معلومات الطلب ليست موجودة'
+            ],404);
+        }
+        try {
+            $sabeq = new SabeqService();
+            $sabeqResponse = $sabeq->informationParcel($trackNumber);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => ' خطأ في جلب معلومات الطلب من سابق ولاحق '
+            ], 500);
+        }
+        return response()->json([
+            'status' => true,
+            'data' => ['parcel' => $sabeqResponse],
+            'message' => 'تم جلب بيانات الطلب بنجاح'
+        ]);
+    }
+
+    public function cancelParcel($orderId,$trackNumber)
+    {
+        $order = Order::where('id', $orderId)->where('track_number', $trackNumber)->first();
+        if(!$order){
+            return response()->json([
+            'status' => false,
+            'message' => 'معلومات الطلب ليست موجودة'
+            ],404);
+        }
+        try {
+        $sabeq = new SabeqService();
+        $sabeqResponse = $sabeq->cancelParcel($trackNumber);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'خطأ في إلغاء الطلب من سابق: ' . $e->getMessage()
+            ], 500);
+        }
+        return response()->json([
+            'status' => true,
+            'data' => ['parcel' => $sabeqResponse],
+            'message' => 'تم حذف الطلب بنجاح'
+        ]);
     }
 
     /**

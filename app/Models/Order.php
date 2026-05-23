@@ -19,6 +19,7 @@ class Order extends Model
         'delivery_price',
         'total',
         'status',
+        'track_number',
     ];
 
     protected $casts = [

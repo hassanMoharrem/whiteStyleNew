@@ -42,6 +42,8 @@ Route::post('/site/orders', [SiteOrderController::class, 'store']);
 Route::get('/site/cities/all', [CitiesController::class, 'index']);
 Route::post('/site/subscribe', [SubscribeController::class, 'store']);
 Route::get('/sabeq/areas', [SabeqController::class, 'areas']);
+Route::get('/sabeq/parcel/{orderId}/{trackNumber}', [SiteOrderController::class, 'informationParcel']);
+Route::post('/sabeq/parcel/cancel/{orderId}/{trackNumber}', [SiteOrderController::class, 'cancelParcel']);
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
 

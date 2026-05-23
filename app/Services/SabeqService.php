@@ -60,4 +60,63 @@ class SabeqService
 
         return $areas;
     }
+    public function createParcel($order, $area_id, $street_id)
+{
+    $verificationToken = $this->verificationToken();
+
+    $response = Http::post('https://sabeq.ps/api/v1/parcels', [
+
+        'verification_token' => $verificationToken,
+
+        'name' => $order->customer_name,
+
+        'phone1' => $order->customer_phone,
+
+        'phone2' => $order->customer_phone,
+        // content => order items with quantities and prices
+
+        'content' => collect($order->items)->map(function ($item) {
+            return "{$item['product_name']} - (المقاس: {$item['size']}) x {$item['quantity']} (السعر: {$item['price']})";
+        })->implode(', '),
+
+        'payment_amount' => $order->total,
+
+        'area_id' => $area_id,
+
+        'street_id' => $street_id ?? '',
+
+        'address' => $order->address,
+
+        'location_url' => $order->location_url ?? '',
+
+        'delivery_notes' => $order->delivery_notes ?? '',
+
+        'special_notes' => '',
+
+        'service_type' => 'pay_delivery',
+
+    ]);
+
+    return $response->json();
+}
+    public function informationParcel($trackNumber)
+    {
+        $verificationToken = $this->verificationToken();
+
+        $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}", [
+            'verification_token' => $verificationToken,
+        ]);
+
+        return $response->json();
+    }
+        public function cancelParcel($trackNumber)
+    {
+        $verificationToken = $this->verificationToken();
+
+        $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/cancel", [
+            'verification_token' => $verificationToken,
+        ]);
+
+        return $response->json();
+    }
 }
