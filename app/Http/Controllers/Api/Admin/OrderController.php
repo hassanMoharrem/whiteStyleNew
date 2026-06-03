@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\SabeqService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -13,7 +14,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Order::query();
+        $query = Order::with('user');
 
         // Search by customer name, phone, or order ID
         if ($request->has('search')) {
@@ -46,6 +47,62 @@ class OrderController extends Controller
             ],
             'message' => 'Orders retrieved successfully'
         ]);
+    }
+
+
+    /**
+     * Store a newly created order in storage (for testing purposes, as orders are usually created from the site)
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'city_name' => 'required|string|max:255',
+            'area_name' => 'required|string|max:255',
+            'street_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'items' => 'required|array|min:1',
+            'subtotal' => 'required|numeric|min:0'
+        ]);
+
+        $deliveryPrice = 0; // Default delivery price
+        $total = $request->subtotal + $deliveryPrice;
+
+        $order = Order::create([
+            'customer_name' => $request->customer_name,
+            'customer_phone' => $request->customer_phone,
+            'city_name' => $request->city_name,
+            'area_name' => $request->area_name,
+            'street_name' => $request->street_name,
+            'address' => $request->address,
+            'description' => $request->description,
+            'items' => $request->items,
+            'subtotal' => $request->subtotal,
+            'delivery_price' => $deliveryPrice,
+            'total' => $total,
+            'status' => 'pending'
+        ]);
+        $area_id = $request->area_id;
+        $street_id = $request->street_id;
+
+        // هنا يمكنك إضافة منطق لإنشاء شحنة في Sabeq وربط رقم التتبع بالطلب إذا لزم الأمر
+        $sabeq = new SabeqService();
+        $sabeqResponse = $sabeq->createParcel($order,$area_id, $street_id);
+        if ($sabeqResponse['success']) {
+            $order->update(
+                ['track_number' => $sabeqResponse['track_number'],
+                 'delivery_price' => $sabeqResponse['delivery_price'] 
+                ]
+                );
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => ['order' => $order],
+            'message' => 'تم إنشاء الطلب بنجاح'
+        ], 201);
     }
 
     /**
@@ -86,6 +143,19 @@ class OrderController extends Controller
         $request->validate([
             'status' => 'required|in:pending,processing,completed,cancelled'
         ]);
+        if ($request->status === 'cancelled' && $order->track_number) {
+            // إذا تم إلغاء الطلب وكان لديه رقم تتبع، قم بإلغاء الشحنة في Sabeq
+            try {
+                $sabeq = new SabeqService();
+                $sabeq->cancelParcel($order->track_number);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'خطأ في إلغاء الطلب من سابق ولاحق'
+                ], 500);
+            }
+           
+        }
 
         $order->update([
             'status' => $request->status

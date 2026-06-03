@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\Site\CategoryController as SiteCategoryController;
 use App\Http\Controllers\Api\Site\OrderController as SiteOrderController;
 use App\Http\Controllers\Api\Site\CitiesController;
 use App\Http\Controllers\Api\Site\SubscribeController;
+use App\Http\Controllers\Api\User\AuthController;
 use Illuminate\Support\Facades\Route;
 
 // Public Site Routes
@@ -48,9 +49,12 @@ Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
 
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout']);
         Route::get('/me', [AdminAuthController::class, 'me']);
+
+        // user management
+        Route::apiResource('users', App\Http\Controllers\Api\Admin\UserController::class);
 
         // Dashboard Statistics
         Route::get('dashboard/statistics', [DashboardController::class, 'getStatistics']);
@@ -101,5 +105,27 @@ Route::prefix('admin')->group(function () {
         Route::get('subscribes', [App\Http\Controllers\Api\Admin\SubscribeController::class, 'index']);
         Route::delete('subscribes/{subscribe}', [App\Http\Controllers\Api\Admin\SubscribeController::class, 'destroy']);
 
+    });
+});
+
+// Public routes for products and areas (accessible to users for order creation)
+Route::get('/products', [SiteProductController::class, 'index']);
+Route::get('/sabeq/areas', [SabeqController::class, 'areas']);
+
+Route::prefix('user')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+
+    Route::middleware('auth:user')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
+
+        // User Orders
+        Route::get('orders', [App\Http\Controllers\Api\User\OrderController::class, 'index']);
+        Route::get('orders/stats', [App\Http\Controllers\Api\User\OrderController::class, 'stats']);
+        Route::post('orders', [App\Http\Controllers\Api\User\OrderController::class, 'store']);
+        Route::get('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'show']);
+        Route::put('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'update']);
+        Route::post('orders/{id}/cancel', [App\Http\Controllers\Api\User\OrderController::class, 'cancel']);
+        Route::delete('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'destroy']);
     });
 });

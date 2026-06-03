@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+        'user_id',
         'customer_name',
         'customer_phone',
         'city_name',
@@ -29,5 +30,11 @@ class Order extends Model
         'total' => 'decimal:2',
     ];
 
-    // تم حذف علاقة city لأن city_id لم يعد موجودًا
+    /**
+     * Get the user that owns the order
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

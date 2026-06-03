@@ -8,6 +8,7 @@ use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Services\SabeqService;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -19,9 +20,11 @@ class OrderController extends Controller
         $validator = Validator::make($request->all(), [
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
+            'area_id' => 'required|integer',
+            'street_id' => 'nullable|integer',
             'city_name' => 'required|string|max:255',
             'area_name' => 'required|string|max:255',
-            'street_name' => 'required|string|max:255',
+            'street_name' => 'nullable|string|max:255',
             'address' => 'required|string',
             'description' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -52,7 +55,7 @@ class OrderController extends Controller
 
         // Get city to calculate delivery price
         // $city = City::where('name', $request->city_name)->first();
-        $deliveryPrice = 25; // Default delivery price
+        $deliveryPrice = 0; // Default delivery price
         $total = $request->subtotal + $deliveryPrice;
 
         $order = Order::create([
@@ -69,18 +72,39 @@ class OrderController extends Controller
             'total' => $total,
             'status' => 'pending',
         ]);
-        $area_id = $request->area_id; // Assuming area_name is the ID of the area in Sabeq
-        $street_id = $request->street_id; // Assuming street_name is the ID of the street in Sabeq
+        // Create parcel in Sabeq
+        try {
+            $area_id = $request->area_id;
+            $street_id = $request->street_id;
 
-        $sabeq = new SabeqService();
-
-        $sabeqResponse = $sabeq->createParcel($order , $area_id , $street_id);
-
-        if (isset($sabeqResponse['track_number'])) {
-            $order->update([
-                'track_number' => $sabeqResponse['track_number'],
-                'delivery_price' => $sabeqResponse['delivery_cost'],
+            Log::info('Attempting to create Sabeq parcel', [
+                'order_id' => $order->id,
+                'area_id' => $area_id,
+                'street_id' => $street_id
             ]);
+
+            $sabeq = new SabeqService();
+            $sabeqResponse = $sabeq->createParcel($order, $area_id, $street_id);
+
+            Log::info('Sabeq response received', ['response' => $sabeqResponse]);
+
+            if (isset($sabeqResponse['track_number'])) {
+                $order->update([
+                    'track_number' => $sabeqResponse['track_number'],
+                    'delivery_price' => $sabeqResponse['delivery_cost'],
+                    'total' => $request->subtotal + $sabeqResponse['delivery_cost'],
+                ]);
+                Log::info('Order updated with Sabeq data', ['order_id' => $order->id, 'track_number' => $sabeqResponse['track_number']]);
+            } else {
+                Log::warning('Sabeq response missing track_number', ['response' => $sabeqResponse]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Sabeq parcel creation failed (Site)', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'order_id' => $order->id
+            ]);
+            // Continue without failing the order creation
         }
 
         return response()->json([
@@ -105,6 +129,7 @@ class OrderController extends Controller
             $sabeq = new SabeqService();
             $sabeqResponse = $sabeq->informationParcel($trackNumber);
         } catch (\Exception $e) {
+            Log::error('Sabeq parcel information failed (Site): ' . $e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => ' خطأ في جلب معلومات الطلب من سابق ولاحق '
@@ -130,9 +155,10 @@ class OrderController extends Controller
         $sabeq = new SabeqService();
         $sabeqResponse = $sabeq->cancelParcel($trackNumber);
         } catch (\Exception $e) {
+            Log::error('Sabeq parcel cancellation failed (Site): ' . $e->getMessage());
             return response()->json([
                 'status' => false,
-                'message' => 'خطأ في إلغاء الطلب من سابق: ' . $e->getMessage()
+                'message' => 'خطأ في إلغاء الطلب من سابق ولاحق'
             ], 500);
         }
         $order->update([

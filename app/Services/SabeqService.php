@@ -64,40 +64,47 @@ class SabeqService
 {
     $verificationToken = $this->verificationToken();
 
-    $response = Http::post('https://sabeq.ps/api/v1/parcels', [
+    $content = collect($order->items)->map(function ($item) {
+        $content = $item['product_name'];
 
+        // Add size if exists and not empty
+        if (array_key_exists('size', $item) && !empty($item['size'])) {
+            $content .= " - (المقاس: {$item['size']})";
+        }
+
+        $content .= " x {$item['quantity']} (السعر: {$item['price']} ₪)";
+
+        return $content;
+    })->implode(', ');
+
+    $payload = [
         'verification_token' => $verificationToken,
-
         'name' => $order->customer_name,
-
         'phone1' => $order->customer_phone,
-
         'phone2' => $order->customer_phone,
-        // content => order items with quantities and prices
-
-        'content' => collect($order->items)->map(function ($item) {
-            return "{$item['product_name']} - (المقاس: {$item['size']}) x {$item['quantity']} (السعر: {$item['price']})";
-        })->implode(', '),
-
+        'content' => $content,
         'payment_amount' => $order->total,
-
         'area_id' => $area_id,
-
         'street_id' => $street_id ?? '',
-
         'address' => $order->address,
-
         'location_url' => $order->location_url ?? '',
-
         'delivery_notes' => $order->delivery_notes ?? '',
-
         'special_notes' => '',
-
         'service_type' => 'pay_delivery',
+    ];
 
+    Log::info('Sabeq API Request', ['payload' => $payload]);
+
+    $response = Http::post('https://sabeq.ps/api/v1/parcels', $payload);
+
+    $responseData = $response->json();
+
+    Log::info('Sabeq API Response', [
+        'status' => $response->status(),
+        'data' => $responseData
     ]);
 
-    return $response->json();
+    return $responseData;
 }
     public function informationParcel($trackNumber)
     {
