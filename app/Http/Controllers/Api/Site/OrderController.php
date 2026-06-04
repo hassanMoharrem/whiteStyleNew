@@ -8,6 +8,7 @@ use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Services\SabeqService;
+use App\Services\DeliveryPriceService;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -53,10 +54,17 @@ class OrderController extends Controller
             ], 422);
         }
 
-        // Get city to calculate delivery price
-        // $city = City::where('name', $request->city_name)->first();
-        $deliveryPrice = 0; // Default delivery price
+        // Calculate delivery price server-side based on city_name
+        // DO NOT trust any price sent from frontend for security
+        $deliveryPrice = DeliveryPriceService::calculatePriceFromCityName($request->city_name);
         $total = $request->subtotal + $deliveryPrice;
+
+        Log::info('Calculated delivery price', [
+            'city_name' => $request->city_name,
+            'delivery_price' => $deliveryPrice,
+            'subtotal' => $request->subtotal,
+            'total' => $total
+        ]);
 
         $order = Order::create([
             'customer_name' => $request->customer_name,
@@ -91,8 +99,8 @@ class OrderController extends Controller
             if (isset($sabeqResponse['track_number'])) {
                 $order->update([
                     'track_number' => $sabeqResponse['track_number'],
-                    'delivery_price' => $sabeqResponse['delivery_cost'],
-                    'total' => $request->subtotal + $sabeqResponse['delivery_cost'],
+                    // 'delivery_price' => $sabeqResponse['delivery_cost'],
+                    // 'total' => $request->subtotal + $sabeqResponse['delivery_cost'],
                 ]);
                 Log::info('Order updated with Sabeq data', ['order_id' => $order->id, 'track_number' => $sabeqResponse['track_number']]);
             } else {

@@ -93,7 +93,7 @@ class OrderController extends Controller
         if ($sabeqResponse['success']) {
             $order->update(
                 ['track_number' => $sabeqResponse['track_number'],
-                 'delivery_price' => $sabeqResponse['delivery_price'] 
+                //  'delivery_price' => $sabeqResponse['delivery_price'] 
                 ]
                 );
         }
