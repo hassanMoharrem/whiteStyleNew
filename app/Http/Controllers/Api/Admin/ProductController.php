@@ -40,6 +40,7 @@ class ProductController extends Controller
             $validated['images'] = $this->handleProductImages($request->images);
 
             $product = Product::create($validated);
+
             $product->load('subCategory', 'brand');
 
             return response()->json([

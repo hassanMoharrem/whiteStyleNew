@@ -109,9 +109,10 @@ class NavigationController extends Controller
         // Get limit from request (default: all)
         $limit = $request->get('limit');
 
-        $query = SubCategory::select('id', 'title', 'category_id')
-            ->orderBy('title', 'asc');
+        //where count products > 0
 
+        $query = SubCategory::select('id', 'title', 'category_id')
+            ->whereHas('products');
         // Apply limit if specified
         if ($limit) {
             $query->limit($limit);
