@@ -32,15 +32,6 @@ class SabeqService
 
     public function getAreas()
     {
-        // $verificationToken = $this->verificationToken();
-
-        // $response = Http::get('https://sabeq.ps/api/v1/parcels/get_areas', [
-        //     'verification_token' => $verificationToken,
-        // ]);
-
-        // return $response->json();
-
-
         $cacheKey = 'sabeq_areas';
         $areas = Cache::get($cacheKey);
         if (!$areas) {
@@ -67,7 +58,6 @@ class SabeqService
     $content = collect($order->items)->map(function ($item) {
         $content = $item['product_name'];
 
-        // Add size if exists and not empty
         if (array_key_exists('size', $item) && !empty($item['size'])) {
             $content .= " - (المقاس: {$item['size']})";
         }
@@ -128,7 +118,6 @@ class SabeqService
     }
     public function markAsReady($trackNumber)
 {
-    dd(1230);
     $verificationToken = $this->verificationToken();
 
     $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/packed_ready_parcel", [

@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\Site\OrderController as SiteOrderController;
 use App\Http\Controllers\Api\Site\CitiesController;
 use App\Http\Controllers\Api\Site\SubscribeController;
 use App\Http\Controllers\Api\User\AuthController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 // Public Site Routes
@@ -130,3 +131,4 @@ Route::prefix('user')->group(function () {
         Route::delete('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'destroy']);
     });
 });
+
