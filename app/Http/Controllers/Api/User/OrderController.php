@@ -61,7 +61,7 @@ class OrderController extends Controller
 
         $stats = [
             'total_orders' => Order::where('user_id', $user->id)->count(),
-            'total_value' => Order::where('user_id', $user->id)->sum('total'),
+            'total_value' => Order::where('user_id', $user->id)->where('status','completed')->sum('total'),
             'pending' => Order::where('user_id', $user->id)->where('status', 'pending')->count(),
             'processing' => Order::where('user_id', $user->id)->where('status', 'processing')->count(),
             'completed' => Order::where('user_id', $user->id)->where('status', 'completed')->count(),
