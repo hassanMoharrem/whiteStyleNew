@@ -126,4 +126,14 @@ class SabeqService
 
         return $response->json();
     }
+    public function markAsReady($trackNumber)
+{
+    $verificationToken = $this->verificationToken();
+
+    $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/packed_ready_parcel", [
+        'verification_token' => $verificationToken,
+    ]);
+
+    return $response->json();
+}
 }

@@ -299,17 +299,17 @@ class OrderController extends Controller
         }
 
         // Cancel on Sabeq if track_number exists
-        // if ($order->track_number) {
-        //     try {
-        //         $sabeq = new \App\Services\SabeqService();
-        //         $sabeqResponse = $sabeq->cancelParcel($order->track_number);
+        if ($order->track_number) {
+            try {
+                $sabeq = new \App\Services\SabeqService();
+                $sabeqResponse = $sabeq->markAsReady($order->track_number);
 
-        //         Log::info('Sabeq cancellation response: ' . json_encode($sabeqResponse));
-        //     } catch (\Exception $e) {
-        //         Log::error('Sabeq parcel cancellation failed: ' . $e->getMessage());
-        //         // Continue with local cancellation even if Sabeq fails
-        //     }
-        // }
+                Log::info('Sabeq completed response: ' . json_encode($sabeqResponse));
+            } catch (\Exception $e) {
+                Log::error('Sabeq parcel completed failed: ' . $e->getMessage());
+                // Continue with local completed even if Sabeq fails
+            }
+        }
 
         // Update order status
         $order->update(['status' => 'completed']);
