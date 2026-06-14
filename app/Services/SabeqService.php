@@ -128,6 +128,7 @@ class SabeqService
     }
     public function markAsReady($trackNumber)
 {
+    dd(1230);
     $verificationToken = $this->verificationToken();
 
     $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/packed_ready_parcel", [
