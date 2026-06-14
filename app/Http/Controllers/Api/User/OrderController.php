@@ -277,6 +277,48 @@ class OrderController extends Controller
             'data' => ['order' => $order],
             'message' => 'تم إلغاء الطلب بنجاح'
         ]);
+    }    
+    public function compluted(Request $request, $id)
+    {
+        $user = $request->user();
+        $order = Order::where('user_id', $user->id)->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'الطلب غير موجود'
+            ], 404);
+        }
+
+        // Only allow cancellation for pending or processing orders
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يمكن إلغاء هذا الطلب'
+            ], 403);
+        }
+
+        // Cancel on Sabeq if track_number exists
+        // if ($order->track_number) {
+        //     try {
+        //         $sabeq = new \App\Services\SabeqService();
+        //         $sabeqResponse = $sabeq->cancelParcel($order->track_number);
+
+        //         Log::info('Sabeq cancellation response: ' . json_encode($sabeqResponse));
+        //     } catch (\Exception $e) {
+        //         Log::error('Sabeq parcel cancellation failed: ' . $e->getMessage());
+        //         // Continue with local cancellation even if Sabeq fails
+        //     }
+        // }
+
+        // Update order status
+        $order->update(['status' => 'compluted']);
+
+        return response()->json([
+            'status' => true,
+            'data' => ['order' => $order],
+            'message' => 'تم إتمام الطلب بنجاح'
+        ]);
     }
 
     /**
