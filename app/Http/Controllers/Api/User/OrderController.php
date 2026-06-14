@@ -303,6 +303,7 @@ class OrderController extends Controller
             try {
                 $sabeq = new \App\Services\SabeqService();
                 $sabeqResponse = $sabeq->markAsReady($order->track_number);
+                dd($sabeqResponse);
 
                 Log::info('Sabeq completed response: ' . json_encode($sabeqResponse));
             } catch (\Exception $e) {
