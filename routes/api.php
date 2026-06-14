@@ -126,7 +126,7 @@ Route::prefix('user')->group(function () {
         Route::get('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'show']);
         Route::put('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'update']);
         Route::post('orders/{id}/cancel', [App\Http\Controllers\Api\User\OrderController::class, 'cancel']);
-        Route::post('orders/{id}/compluted', [App\Http\Controllers\Api\User\OrderController::class, 'compluted']);
+        Route::post('orders/{id}/completed', [App\Http\Controllers\Api\User\OrderController::class, 'completed']);
         Route::delete('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'destroy']);
     });
 });

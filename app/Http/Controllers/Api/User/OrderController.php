@@ -278,7 +278,7 @@ class OrderController extends Controller
             'message' => 'تم إلغاء الطلب بنجاح'
         ]);
     }    
-    public function compluted(Request $request, $id)
+    public function completed(Request $request, $id)
     {
         $user = $request->user();
         $order = Order::where('user_id', $user->id)->find($id);
@@ -312,7 +312,7 @@ class OrderController extends Controller
         // }
 
         // Update order status
-        $order->update(['status' => 'compluted']);
+        $order->update(['status' => 'completed']);
 
         return response()->json([
             'status' => true,
