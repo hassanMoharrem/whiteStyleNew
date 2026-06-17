@@ -13,39 +13,39 @@ class DeliveryPriceService
      * @param string|null $cityNameEn
      * @return float
      */
-    public static function calculatePrice(?string $cityNameEn): float
-    {
-        if (empty($cityNameEn)) {
-            return config('delivery.default_price', 25);
-        }
-
-        // Normalize city name to lowercase for comparison
-        $cityNameEn = strtolower(trim($cityNameEn));
-
-        // Get prices from config
-        $prices = config('delivery.prices', []);
-
-        // Direct match
-        if (isset($prices[$cityNameEn])) {
-            return (float) $prices[$cityNameEn];
-        }
-
-        // Partial matching for variations
-        if (str_contains($cityNameEn, 'israel')) {
-            return 80;
-        }
-
-        if (str_contains($cityNameEn, 'jerusalem (')) {
-            return 35;
-        }
-
-        if (str_contains($cityNameEn, 'abo gosh')) {
-            return 45;
-        }
-
-        // Default price (West Bank cities)
-        return config('delivery.default_price', 25);
+public static function calculatePrice(?string $cityNameEn): float
+{
+    if (empty($cityNameEn)) {
+        return config('delivery.default_price', 19);
     }
+
+    // Normalize city name to lowercase for comparison
+    $cityNameEn = strtolower(trim($cityNameEn));
+
+    // Get prices from config
+    $prices = config('delivery.prices', []);
+
+    // Direct match
+    if (isset($prices[$cityNameEn])) {
+        return (float) $prices[$cityNameEn];
+    }
+
+    // Partial matching for variations
+    if (str_contains($cityNameEn, 'israel')) {
+        return 70;
+    }
+
+    if (str_contains($cityNameEn, 'jerusalem (')) {
+        return 30;
+    }
+
+    if (str_contains($cityNameEn, 'abo gosh')) {
+        return 45;
+    }
+
+    // Default price (West Bank cities)
+    return config('delivery.default_price', 19);
+}
 
     /**
      * Get city_name_en from Sabeq API by city_name

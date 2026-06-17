@@ -129,6 +129,8 @@ Route::prefix('user')->group(function () {
         Route::post('orders/{id}/cancel', [App\Http\Controllers\Api\User\OrderController::class, 'cancel']);
         Route::post('orders/{id}/completed', [App\Http\Controllers\Api\User\OrderController::class, 'completed']);
         Route::delete('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'destroy']);
+        Route::get('/orders/{id}/print', [App\Http\Controllers\Api\User\OrderController::class, 'print']);
+
     });
 });
 

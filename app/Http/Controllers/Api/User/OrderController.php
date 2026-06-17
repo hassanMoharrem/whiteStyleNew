@@ -62,6 +62,8 @@ class OrderController extends Controller
         $stats = [
             'total_orders' => Order::where('user_id', $user->id)->count(),
             'total_value' => Order::where('user_id', $user->id)->where('status','completed')->sum('total'),
+            'total_amount' => Order::where('user_id', $user->id)->where('status', 'completed')->sum('total'),
+            'total_delivery_price' => Order::where('user_id', $user->id)->where('status', 'completed')->sum('delivery_price'),
             'pending' => Order::where('user_id', $user->id)->where('status', 'pending')->count(),
             'processing' => Order::where('user_id', $user->id)->where('status', 'processing')->count(),
             'completed' => Order::where('user_id', $user->id)->where('status', 'completed')->count(),
@@ -87,7 +89,8 @@ class OrderController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
-            'area_id' => 'required|integer',
+            'city_id' => 'required|integer', // This is area_id from frontend
+            'area_id' => 'nullable|integer', // Keep for backward compatibility
             'street_id' => 'nullable|integer',
             'city_name' => 'required|string|max:255',
             'area_name' => 'required|string|max:255',
@@ -95,32 +98,30 @@ class OrderController extends Controller
             'address' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|integer',
-            'items.*.product_name' => 'required|string',
-            'items.*.size' => 'nullable|string|max:50',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.description' => 'required|string|max:1000',
             'items.*.price' => 'required|numeric|min:0',
+            'subtotal' => 'nullable|numeric|min:0',
+            'delivery_price' => 'nullable|numeric|min:0',
+            'total' => 'required|numeric|min:0',
+            'service_type' => 'required|in:تسليم وتحصيل,تبديل طرد,تسليم فقط,استلام طرد',
         ]);
 
-        // Calculate totals
-        $subtotal = 0;
+        // Use city_id from request (which is actually area_id from frontend)
+        $areaId = $request->city_id ?? $request->area_id;
+
+        // Calculate subtotal from items
+        $calculatedSubtotal = 0;
         foreach ($request->items as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
+            $calculatedSubtotal += $item['price'];
         }
 
-        // Calculate delivery price server-side based on city_name
-        // DO NOT trust any price sent from frontend for security
-        $deliveryPrice = DeliveryPriceService::calculatePriceFromCityName($request->city_name);
-        $total = $subtotal + $deliveryPrice;
+        // Verify delivery price based on city_name
+        $expectedDeliveryPrice = DeliveryPriceService::calculatePriceFromCityName($request->city_name);
 
-        Log::info('User order - Calculated delivery price', [
-            'user_id' => $user->id,
-            'city_name' => $request->city_name,
-            'delivery_price' => $deliveryPrice,
-            'subtotal' => $subtotal,
-            'total' => $total
-        ]);
-
+        // Use the total sent from frontend (allows manual override)
+        $total = $request->total;
+        $subtotal = $request->subtotal ?? $calculatedSubtotal;
+        $deliveryPrice = $request->delivery_price ?? $expectedDeliveryPrice;
         $order = Order::create([
             'user_id' => $user->id,
             'customer_name' => $request->customer_name,
@@ -134,20 +135,21 @@ class OrderController extends Controller
             'subtotal' => $subtotal,
             'delivery_price' => $deliveryPrice,
             'total' => $total,
-            'status' => 'pending'
+            'status' => 'pending',
+            'service_type' => $request->service_type
         ]);
 
         // Create parcel in Sabeq
         try {
-            $sabeq = new \App\Services\SabeqService();
-            $sabeqResponse = $sabeq->createParcel($order, $request->area_id, $request->street_id);
+            $sabeq = new \App\Services\SabeqService($user);
+            $sabeqResponse = $sabeq->createParcelUser($order, $areaId, $request->street_id);
 
             if (isset($sabeqResponse['track_number'])) {
             $order->update([
                 'track_number' => $sabeqResponse['track_number'],
-                // 'delivery_price' => $sabeqResponse['delivery_cost'],
-                // 'total' => $subtotal + $sabeqResponse['delivery_cost'],
+                'status' => 'completed'
             ]);
+            // $sabeq->markAsReady($sabeqResponse['track_number']);
         }
         } catch (\Exception $e) {
             Log::error('Sabeq parcel creation failed: ' . $e->getMessage());
@@ -259,7 +261,7 @@ class OrderController extends Controller
         // Cancel on Sabeq if track_number exists
         if ($order->track_number) {
             try {
-                $sabeq = new \App\Services\SabeqService();
+                $sabeq = new \App\Services\SabeqService($user);
                 $sabeqResponse = $sabeq->cancelParcel($order->track_number);
 
                 Log::info('Sabeq cancellation response: ' . json_encode($sabeqResponse));
@@ -291,17 +293,17 @@ class OrderController extends Controller
         }
 
         // Only allow cancellation for pending or processing orders
-        if (!in_array($order->status, ['pending', 'processing'])) {
-            return response()->json([
-                'status' => false,
-                'message' => 'لا يمكن إلغاء هذا الطلب'
-            ], 403);
-        }
+        // if (!in_array($order->status, ['pending', 'processing'])) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'لا يمكن إلغاء هذا الطلب'
+        //     ], 403);
+        // }
 
         // Cancel on Sabeq if track_number exists
         // if ($order->track_number) {
         //     try {
-        //         $sabeq = new \App\Services\SabeqService();
+        //         $sabeq = new \App\Services\SabeqService($user);
         //         $sabeqResponse = $sabeq->markAsReady($order->track_number);
 
         //         Log::info('Sabeq completed response: ' . json_encode($sabeqResponse));
@@ -310,6 +312,7 @@ class OrderController extends Controller
                 // Continue with local completed even if Sabeq fails
         //     }
         // }
+        
 
         // Update order status
         $order->update(['status' => 'completed']);
@@ -320,6 +323,23 @@ class OrderController extends Controller
             'message' => 'تم إتمام الطلب بنجاح'
         ]);
     }
+    public function print(Request $request, $id)
+{
+    $user = $request->user();
+    $order = Order::where('user_id', $user->id)->findOrFail($id);
+
+    if (!$order->track_number) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد رقم تتبع لهذا الطلب'
+        ], 404);
+    }
+
+    $sabeq = new \App\Services\SabeqService($user);
+    $html = $sabeq->printParcel($order->track_number);
+
+    return response($html)->header('Content-Type', 'text/html');
+}
 
     /**
      * Remove the specified order (only if status is pending)

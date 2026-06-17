@@ -18,6 +18,15 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+
+        $siteUser = null;
+        if ($request->filled('ref')) {
+            $siteUser = \App\Models\User::where('slug', $request->ref)->first();
+        }
+        if (!$siteUser) {
+            $siteUser = \App\Models\User::find(env('DEFAULT_USER_ID'));
+        }
+        
         $validator = Validator::make($request->all(), [
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
@@ -28,6 +37,7 @@ class OrderController extends Controller
             'street_name' => 'nullable|string|max:255',
             'address' => 'required|string',
             'description' => 'nullable|string',
+            'delivery_cost' => 'nullable|integer',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|integer',
             'items.*.product_name' => 'required|string',
@@ -57,15 +67,10 @@ class OrderController extends Controller
         // Calculate delivery price server-side based on city_name
         // DO NOT trust any price sent from frontend for security
         $deliveryPrice = DeliveryPriceService::calculatePriceFromCityName($request->city_name);
-        $total = $request->subtotal + $deliveryPrice;
-
-        Log::info('Calculated delivery price', [
-            'city_name' => $request->city_name,
-            'delivery_price' => $deliveryPrice,
-            'subtotal' => $request->subtotal,
-            'total' => $total
-        ]);
-
+        $commission = $request->delivery_cost - $deliveryPrice;
+        $sub_total_edit= $request->subtotal + $commission;
+        $total = $sub_total_edit + $deliveryPrice;
+        dd($total);
         $order = Order::create([
             'customer_name' => $request->customer_name,
             'customer_phone' => $request->customer_phone,
@@ -75,10 +80,12 @@ class OrderController extends Controller
             'address' => $request->address,
             'description' => $request->description,
             'items' => $request->items,
-            'subtotal' => $request->subtotal,
+            'subtotal' => $sub_total_edit,
             'delivery_price' => $deliveryPrice,
             'total' => $total,
             'status' => 'pending',
+            'service_type' => 'تسليم وتحصيل', // Always set for customer orders
+            'user_id' => $siteUser->id
         ]);
         // Create parcel in Sabeq
         try {
@@ -91,18 +98,14 @@ class OrderController extends Controller
                 'street_id' => $street_id
             ]);
 
-            $sabeq = new SabeqService();
+            $sabeq = new SabeqService($siteUser);
             $sabeqResponse = $sabeq->createParcel($order, $area_id, $street_id);
 
-            Log::info('Sabeq response received', ['response' => $sabeqResponse]);
 
             if (isset($sabeqResponse['track_number'])) {
                 $order->update([
                     'track_number' => $sabeqResponse['track_number'],
-                    // 'delivery_price' => $sabeqResponse['delivery_cost'],
-                    // 'total' => $request->subtotal + $sabeqResponse['delivery_cost'],
                 ]);
-                Log::info('Order updated with Sabeq data', ['order_id' => $order->id, 'track_number' => $sabeqResponse['track_number']]);
             } else {
                 Log::warning('Sabeq response missing track_number', ['response' => $sabeqResponse]);
             }
@@ -124,7 +127,7 @@ class OrderController extends Controller
 
     /**
      * Get order information     */
-    public function informationParcel($orderId,$trackNumber)
+    public function informationParcel(Request $request ,$orderId,$trackNumber)
     {
         $order = Order::where('id', $orderId)->where('track_number', $trackNumber)->first();
         if(!$order){
@@ -132,9 +135,13 @@ class OrderController extends Controller
             'status' => false,
             'message' => 'معلومات الطلب ليست موجودة'
             ],404);
-        }
+        }   
         try {
-            $sabeq = new SabeqService();
+        $siteUser = $order->user_id 
+            ? \App\Models\User::find($order->user_id) 
+            : \App\Models\User::find(env('DEFAULT_USER_ID'));
+        
+            $sabeq = new SabeqService($siteUser);
             $sabeqResponse = $sabeq->informationParcel($trackNumber);
         } catch (\Exception $e) {
             Log::error('Sabeq parcel information failed (Site): ' . $e->getMessage());
@@ -160,7 +167,10 @@ class OrderController extends Controller
             ],404);
         }
         try {
-        $sabeq = new SabeqService();
+        $siteUser = $order->user_id 
+            ? \App\Models\User::find($order->user_id) 
+            : \App\Models\User::find(env('DEFAULT_USER_ID'));
+        $sabeq = new SabeqService($siteUser);
         $sabeqResponse = $sabeq->cancelParcel($trackNumber);
         } catch (\Exception $e) {
             Log::error('Sabeq parcel cancellation failed (Site): ' . $e->getMessage());

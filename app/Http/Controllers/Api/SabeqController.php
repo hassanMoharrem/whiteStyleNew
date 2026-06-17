@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Services\SabeqService;
 class SabeqController extends Controller
 {
-    public function areas(SabeqService $sabeq)
-    {
-        return response()->json(
-            $sabeq->getAreas()
-        );
-    }
+public function areas()
+{
+    $siteUser = \App\Models\User::find(env('DEFAULT_USER_ID'));
+    $sabeq = new SabeqService($siteUser);
+    return response()->json($sabeq->getAreas());
+}
 }

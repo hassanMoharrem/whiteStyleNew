@@ -21,6 +21,7 @@ class Order extends Model
         'total',
         'status',
         'track_number',
+        'service_type',
     ];
 
     protected $casts = [

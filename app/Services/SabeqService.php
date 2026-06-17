@@ -8,10 +8,17 @@ use Illuminate\Support\Facades\Log;
 
 class SabeqService
 {
+    private $user;
+
+    public function __construct($user = null)
+    {
+        $this->user = $user;
+    }
     private function authToken()
     {
+        $loginToken = $this->user?->sabeq_login_token ?? env('SABEQ_LOGIN_TOKEN');
         $response = Http::post('https://sabeq.ps/api/v1/auth', [
-            'login_token' => env('SABEQ_LOGIN_TOKEN'),
+            'login_token' => $loginToken,
         ]);
 
         return $response->json('auth_token');
@@ -20,11 +27,12 @@ class SabeqService
     private function verificationToken()
     {
         $authToken = $this->authToken();
-
+        $profileId = $this->user?->sabeq_profile_id ?? env('SABEQ_PROFILE_ID');
+        $apiKey = $this->user?->sabeq_api_key ?? env('SABEQ_API_KEY');
         $response = Http::post('https://sabeq.ps/api/v1/verify_business', [
             'auth_token' => $authToken,
-            'profile_id' => env('SABEQ_PROFILE_ID'),
-            'api_key' => env('SABEQ_API_KEY'),
+            'profile_id' => $profileId,
+            'api_key' => $apiKey,
         ]);
 
         return $response->json('verification_token');
@@ -52,50 +60,98 @@ class SabeqService
         return $areas;
     }
     public function createParcel($order, $area_id, $street_id)
-{
-    $verificationToken = $this->verificationToken();
+    {
+        $verificationToken = $this->verificationToken();
 
-    $content = collect($order->items)->map(function ($item) {
-        $content = $item['product_name'];
+        $content = collect($order->items)->map(function ($item) {
+            $content = $item['product_name'];
 
-        if (array_key_exists('size', $item) && !empty($item['size'])) {
-            $content .= " - (المقاس: {$item['size']})";
-        }
+            if (array_key_exists('size', $item) && !empty($item['size'])) {
+                $content .= " - (المقاس: {$item['size']})";
+            }
 
-        $content .= " x {$item['quantity']} (السعر: {$item['price']} ₪)";
+            $content .= " x {$item['quantity']}";
 
-        return $content;
-    })->implode(', ');
+            return $content;
+        })->implode(', ');
 
-    $payload = [
-        'verification_token' => $verificationToken,
-        'name' => $order->customer_name,
-        'phone1' => $order->customer_phone,
-        'phone2' => $order->customer_phone,
-        'content' => $content,
-        'payment_amount' => $order->total,
-        'area_id' => $area_id,
-        'street_id' => $street_id ?? '',
-        'address' => $order->address,
-        'location_url' => $order->location_url ?? '',
-        'delivery_notes' => $order->delivery_notes ?? '',
-        'special_notes' => '',
-        'service_type' => 'pay_delivery',
-    ];
+        $payload = [
+            'verification_token' => $verificationToken,
+            'name' => $order->customer_name,
+            'phone1' => $order->customer_phone,
+            'phone2' => $order->customer_phone,
+            'content' => $content,
+            'payment_amount' => $order->total,
+            'area_id' => $area_id,
+            'street_id' => $street_id ?? '',
+            'address' => $order->address,
+            'location_url' => $order->location_url ?? '',
+            'delivery_notes' => $order->delivery_notes ?? '',
+            'special_notes' => '',
+            'service_type' => 'pay_delivery',
+        ];
 
-    Log::info('Sabeq API Request', ['payload' => $payload]);
+        Log::info('Sabeq API Request', ['payload' => $payload]);
 
-    $response = Http::post('https://sabeq.ps/api/v1/parcels', $payload);
+        $response = Http::post('https://sabeq.ps/api/v1/parcels', $payload);
 
-    $responseData = $response->json();
+        $responseData = $response->json();
 
-    Log::info('Sabeq API Response', [
-        'status' => $response->status(),
-        'data' => $responseData
-    ]);
+        Log::info('Sabeq API Response', [
+            'status' => $response->status(),
+            'data' => $responseData
+        ]);
 
-    return $responseData;
-}
+        return $responseData;
+    }
+    public function createParcelUser($order, $area_id, $street_id)
+    {
+        $verificationToken = $this->verificationToken();
+
+        $content = collect($order->items)->map(function ($item) {
+            $content = $item['description'];
+            return $content;
+        })->implode(', ');
+
+        // Map Arabic service types to Sabeq API values
+        $serviceTypeMap = [
+            'تسليم وتحصيل' => 'pay_delivery',
+            'تبديل طرد' => 'exchange',
+            'تسليم فقط' => 'deliver_only',
+            'استلام طرد' => 'fetch'
+        ];
+
+        $sabeqServiceType = $serviceTypeMap[$order->service_type] ?? 'pay_delivery';
+
+        $payload = [
+            'verification_token' => $verificationToken,
+            'name' => $order->customer_name,
+            'phone1' => $order->customer_phone,
+            'phone2' => $order->customer_phone,
+            'content' => $content,
+            'payment_amount' => $order->total,
+            'area_id' => $area_id,
+            'street_id' => $street_id ?? '',
+            'address' => $order->address,
+            'location_url' => $order->location_url ?? '',
+            'delivery_notes' => $order->delivery_notes ?? '',
+            'special_notes' => '',
+            'service_type' => $sabeqServiceType,
+        ];
+
+        Log::info('Sabeq API Request', ['payload' => $payload]);
+
+        $response = Http::post('https://sabeq.ps/api/v1/parcels', $payload);
+
+        $responseData = $response->json();
+
+        Log::info('Sabeq API Response', [
+            'status' => $response->status(),
+            'data' => $responseData
+        ]);
+
+        return $responseData;
+    }
     public function informationParcel($trackNumber)
     {
         $verificationToken = $this->verificationToken();
@@ -117,13 +173,25 @@ class SabeqService
         return $response->json();
     }
     public function markAsReady($trackNumber)
-{
+    {
     $verificationToken = $this->verificationToken();
 
-    $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/packed_ready_parcel", [
+    $response = Http::post("https://sabeq.ps/api/v1/parcels/{$trackNumber}/packed_ready", [
         'verification_token' => $verificationToken,
     ]);
 
     return $response->json();
+
+    }
+    public function printParcel($trackNumber, $size = '10x10')
+{
+    $verificationToken = $this->verificationToken();
+    
+    $response = Http::get("https://sabeq.ps/api/v1/parcels/{$trackNumber}/print", [
+        'verification_token' => $verificationToken,
+        'size' => $size,
+    ]);
+    
+    return $response->body(); // HTML content
 }
 }

@@ -11,33 +11,33 @@ return [
     |
     */
 
-    'prices' => [
-        // West Bank Cities - 25 ILS
-        'jericho' => 25,
-        'hebron' => 25,
-        'bethlehem' => 25,
-        'jenin' => 25,
-        'ramallah' => 25,
-        'salfit' => 25,
-        'east jerusalem (west bank)' => 25,
-        'tubas' => 25,
-        'tulkarm' => 25,
-        'qalqilyah' => 25,
-        'nablus' => 25,
+'prices' => [
+    // West Bank Cities - 19 ILS
+    'jericho' => 19,
+    'hebron' => 19,
+    'bethlehem' => 19,
+    'jenin' => 19,
+    'ramallah' => 19,
+    'salfit' => 19,
+    'east jerusalem (west bank)' => 19,
+    'tubas' => 19,
+    'tulkarm' => 19,
+    'qalqilyah' => 19,
+    'nablus' => 19,
 
-        // Jerusalem (Inner) - 35 ILS
-        'jerusalem (القدس الداخل)' => 35,
+    // Jerusalem (Inner) - 30 ILS
+    'jerusalem (القدس الداخل)' => 30,
 
-        // Abo Gosh + Ein Nakoba - 45 ILS
-        'abo gosh + ein nakoba' => 45,
+    // Abo Gosh + Ein Nakoba - 45 ILS
+    'abo gosh + ein nakoba' => 45,
 
-        // Israel (مناطق الداخل) - 80 ILS
-        'israel (مناطق الداخل)' => 80,
-        'golan + gajar' => 80,
+    // Israel (مناطق الداخل) - 70 ILS
+    'israel (مناطق الداخل)' => 70,
+    'golan + gajar' => 70,
 
-        // Eilat - 110 ILS
-        'eilat' => 110,
-    ],
+    // Eilat - 110 ILS
+    'eilat' => 110,
+],
 
     /*
     |--------------------------------------------------------------------------
@@ -49,5 +49,5 @@ return [
     |
     */
 
-    'default_price' => 25,
+    'default_price' => 19,
 ];

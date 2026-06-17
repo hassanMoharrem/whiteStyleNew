@@ -33,6 +33,10 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'visible' => 'boolean',
+            'slug' => 'nullable|string|max:255|unique:users,slug',
+            'sabeq_login_token' => 'nullable|string',
+            'sabeq_profile_id' => 'nullable|string',
+            'sabeq_api_key' => 'nullable|string',            
         ]);
         $validated['password'] = bcrypt($validated['password']);
         $user = User::create($validated);
@@ -62,6 +66,10 @@ class UserController extends Controller
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
             'visible' => 'boolean',
+            'slug' => 'nullable|string|max:255|unique:users,slug,' . $user->id,
+            'sabeq_login_token' => 'nullable|string',
+            'sabeq_profile_id' => 'nullable|string',
+            'sabeq_api_key' => 'nullable|string',
         ]);
         if (isset($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']);

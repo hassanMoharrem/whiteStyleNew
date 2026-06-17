@@ -23,6 +23,10 @@ class User extends Authenticatable
         'email',
         'password',
         'visible',
+        'slug',
+        'sabeq_login_token',
+        'sabeq_profile_id',
+        'sabeq_api_key',
     ];
 
     /**
@@ -33,6 +37,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'sabeq_login_token',
+        'sabeq_profile_id', 
+        'sabeq_api_key',
     ];
     /**
      * Get the attributes that should be cast.

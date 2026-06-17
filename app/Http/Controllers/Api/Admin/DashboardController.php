@@ -29,6 +29,8 @@ class DashboardController extends Controller
 
         // المبيعات
         $totalSales = Order::where('status', 'completed')->sum('total');
+        $totalNetAmount = Order::where('status', 'completed')->sum('total'); // Sum of all total (net amounts)
+        $totalDeliveryPrice = Order::where('status', 'completed')->sum('delivery_price'); // Sum of all delivery prices
         $todaySales = Order::where('status', 'completed')
             ->whereDate('created_at', today())
             ->sum('total');
@@ -102,6 +104,8 @@ class DashboardController extends Controller
                     'total_cities' => $totalCities,
                     'total_brands' => $totalBrands,
                     'total_sales' => (float) $totalSales,
+                    'total_net_amount' => (float) $totalNetAmount,
+                    'total_delivery_price' => (float) $totalDeliveryPrice,
                     'today_sales' => (float) $todaySales,
                     'month_sales' => (float) $monthSales,
                 ],
