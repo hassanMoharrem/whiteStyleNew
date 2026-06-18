@@ -122,68 +122,92 @@ class ProductController extends Controller
         ]);
     }
 
-    private function handleProductImages($images)
-    {
-        $processedImages = [];
+private function handleProductImages($images)
+{
+    $processedImages = [];
 
-        foreach ($images as $image) {
-            $imageData = [
-                'name' => $image['name'],
-                'url' => $image['url']
-            ];
+    foreach ($images as $image) {
+        $imageData = [
+            'name' => $image['name'],
+            'url' => $image['url']
+        ];
 
-            if ($image['url'] instanceof \Illuminate\Http\UploadedFile) {
-                $imageData['url'] = $image['url']->store('products', 'public');
-            }
+        if ($image['url'] instanceof \Illuminate\Http\UploadedFile) {
+            $uploadedFile = $image['url'];
 
-            $processedImages[] = $imageData;
+            // ضغط الصورة قبل الحفظ
+            $compressedImage = $this->compressImage($uploadedFile);
+
+            // اسم وامتداد الملف
+            $extension = $uploadedFile->getClientOriginalExtension();
+            $filename = uniqid() . '_' . time() . '.' . $extension;
+            $path = 'products/' . $filename;
+
+            // حفظ الصورة المضغوطة بمسار storage/app/public/products
+            Storage::disk('public')->put($path, $compressedImage);
+
+            $imageData['url'] = $path;
         }
 
-        return $processedImages;
+        $processedImages[] = $imageData;
     }
 
-    private function handleProductImagesUpdate($oldImages, $newImages)
-    {
-        $processedImages = [];
-        $oldImagePaths = [];
+    return $processedImages;
+}
 
-        // Collect old image paths
-        if ($oldImages && is_array($oldImages)) {
-            foreach ($oldImages as $oldImage) {
-                if (isset($oldImage['url'])) {
-                    $oldImagePaths[] = $oldImage['url'];
-                }
+private function handleProductImagesUpdate($oldImages, $newImages)
+{
+    $processedImages = [];
+    $oldImagePaths = [];
+
+    // Collect old image paths
+    if ($oldImages && is_array($oldImages)) {
+        foreach ($oldImages as $oldImage) {
+            if (isset($oldImage['url'])) {
+                $oldImagePaths[] = $oldImage['url'];
             }
         }
-
-        foreach ($newImages as $image) {
-            $imageData = [
-                'name' => $image['name'],
-                'url' => $image['url']
-            ];
-
-            // If it's a new uploaded file
-            if ($image['url'] instanceof \Illuminate\Http\UploadedFile) {
-                $imageData['url'] = $image['url']->store('products', 'public');
-            }
-            // If it's an existing path (string), keep it and remove from deletion list
-            elseif (is_string($image['url'])) {
-                // Remove this path from old images so it won't be deleted
-                $oldImagePaths = array_diff($oldImagePaths, [$image['url']]);
-            }
-
-            $processedImages[] = $imageData;
-        }
-
-        // Delete only the images that were removed (not in new images list)
-        foreach ($oldImagePaths as $pathToDelete) {
-            if (Storage::disk('public')->exists($pathToDelete)) {
-                Storage::disk('public')->delete($pathToDelete);
-            }
-        }
-
-        return $processedImages;
     }
+
+    foreach ($newImages as $image) {
+        $imageData = [
+            'name' => $image['name'],
+            'url' => $image['url']
+        ];
+
+        // If it's a new uploaded file
+        if ($image['url'] instanceof \Illuminate\Http\UploadedFile) {
+            $uploadedFile = $image['url'];
+
+            // ضغط الصورة قبل الحفظ
+            $compressedImage = $this->compressImage($uploadedFile);
+
+            $extension = $uploadedFile->getClientOriginalExtension();
+            $filename = uniqid() . '_' . time() . '.' . $extension;
+            $path = 'products/' . $filename;
+
+            Storage::disk('public')->put($path, $compressedImage);
+
+            $imageData['url'] = $path;
+        }
+        // If it's an existing path (string), keep it and remove from deletion list
+        elseif (is_string($image['url'])) {
+            // Remove this path from old images so it won't be deleted
+            $oldImagePaths = array_diff($oldImagePaths, [$image['url']]);
+        }
+
+        $processedImages[] = $imageData;
+    }
+
+    // Delete only the images that were removed (not in new images list)
+    foreach ($oldImagePaths as $pathToDelete) {
+        if (Storage::disk('public')->exists($pathToDelete)) {
+            Storage::disk('public')->delete($pathToDelete);
+        }
+    }
+
+    return $processedImages;
+}
 
     private function deleteProductImages($images)
     {
@@ -197,4 +221,41 @@ class ProductController extends Controller
             }
         }
     }
+    private function compressImage(\Illuminate\Http\UploadedFile $file): string
+{
+    $extension = strtolower($file->getClientOriginalExtension());
+    $fullPath = $file->getRealPath();
+
+    switch ($extension) {
+        case 'jpg':
+        case 'jpeg':
+            $image = imagecreatefromjpeg($fullPath);
+            ob_start();
+            imagejpeg($image, null, 75); // جودة 75
+            $data = ob_get_clean();
+            break;
+
+        case 'png':
+            $image = imagecreatefrompng($fullPath);
+            ob_start();
+            imagepng($image, null, 7); // ضغط 0-9 (7 قوي وكويس)
+            $data = ob_get_clean();
+            break;
+
+        case 'webp':
+            $image = imagecreatefromwebp($fullPath);
+            ob_start();
+            imagewebp($image, null, 75);
+            $data = ob_get_clean();
+            break;
+
+        default:
+            // امتداد غير مدعوم (مثل gif) — رجّع الملف الأصلي بدون تغيير
+            return file_get_contents($fullPath);
+    }
+
+    imagedestroy($image);
+
+    return $data;
+}
 }

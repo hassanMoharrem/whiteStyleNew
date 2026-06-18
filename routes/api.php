@@ -130,6 +130,8 @@ Route::prefix('user')->group(function () {
         Route::post('orders/{id}/completed', [App\Http\Controllers\Api\User\OrderController::class, 'completed']);
         Route::delete('orders/{id}', [App\Http\Controllers\Api\User\OrderController::class, 'destroy']);
         Route::get('/orders/{id}/print', [App\Http\Controllers\Api\User\OrderController::class, 'print']);
+        Route::post('/orders/find-by-track', [App\Http\Controllers\Api\User\OrderController::class, 'findByTrackNumber']);
+        Route::post('/orders/bulk-mark-ready', [App\Http\Controllers\Api\User\OrderController::class, 'bulkMarkReady']);
 
     });
 });

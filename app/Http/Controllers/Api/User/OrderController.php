@@ -312,7 +312,7 @@ class OrderController extends Controller
                 // Continue with local completed even if Sabeq fails
         //     }
         // }
-        
+
 
         // Update order status
         $order->update(['status' => 'completed']);
@@ -371,4 +371,50 @@ class OrderController extends Controller
             'message' => 'تم حذف الطلب بنجاح'
         ]);
     }
+
+
+    public function findByTrackNumber(Request $request)
+{
+    $user = $request->user();
+    $trackNumber = $request->track_number;
+
+    $order = Order::where('user_id', $user->id)
+        ->where('track_number', $trackNumber)
+        ->first();
+
+    if (!$order) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد طلب بهذا الرقم'
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'data' => ['order' => $order]
+    ]);
+}
+public function bulkMarkReady(Request $request)
+{
+    $user = $request->user();
+    $trackNumbers = $request->track_numbers; // array
+
+    $sabeq = new \App\Services\SabeqService($user);
+    $results = [];
+
+    foreach ($trackNumbers as $trackNumber) {
+        try {
+            $sabeq->markAsReady($trackNumber);
+            $results[$trackNumber] = 'success';
+        } catch (\Exception $e) {
+            $results[$trackNumber] = 'failed';
+        }
+    }
+
+    return response()->json([
+        'status' => true,
+        'data' => ['results' => $results],
+        'message' => 'تم تسليم الطلبات لشركة النقل'
+    ]);
+}
 }
