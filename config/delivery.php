@@ -26,7 +26,7 @@ return [
     'nablus' => 19,
 
     // Jerusalem (Inner) - 30 ILS
-    'jerusalem (القدس الداخل)' => 30,
+    'jerusalem' => 30,
 
     // Abo Gosh + Ein Nakoba - 45 ILS
     'abo gosh + ein nakoba' => 45,

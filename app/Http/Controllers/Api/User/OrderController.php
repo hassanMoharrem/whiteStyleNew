@@ -120,8 +120,8 @@ class OrderController extends Controller
 
         // Use the total sent from frontend (allows manual override)
         $total = $request->total;
-        $subtotal = $request->subtotal ?? $calculatedSubtotal;
-        $deliveryPrice = $request->delivery_price ?? $expectedDeliveryPrice;
+        $deliveryPrice = $expectedDeliveryPrice;
+        $subtotal = $request->subtotal - $deliveryPrice;
         $order = Order::create([
             'user_id' => $user->id,
             'customer_name' => $request->customer_name,

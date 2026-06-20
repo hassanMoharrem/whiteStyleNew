@@ -61,7 +61,7 @@ public static function calculatePrice(?string $cityNameEn): float
 
             if (is_array($areas)) {
                 foreach ($areas as $city) {
-                    if (isset($city['city_name']) && $city['city_name'] === $cityName) {
+                    if (isset($city['city_name']) && trim($city['city_name']) === trim($cityName)) {
                         return $city['city_name_en'] ?? null;
                     }
                 }
