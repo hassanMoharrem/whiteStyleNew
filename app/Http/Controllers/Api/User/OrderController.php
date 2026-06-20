@@ -373,7 +373,7 @@ class OrderController extends Controller
     }
 
 
-    public function findByTrackNumber(Request $request)
+public function findByTrackNumber(Request $request)
 {
     $user = $request->user();
     $trackNumber = $request->track_number;
@@ -387,6 +387,24 @@ class OrderController extends Controller
             'status' => false,
             'message' => 'لا يوجد طلب بهذا الرقم'
         ], 404);
+    }
+
+    try {
+        $sabeq = new \App\Services\SabeqService($user);
+        $sabeqResponse = $sabeq->informationParcel($trackNumber);
+
+        $tracking = $sabeqResponse['parcel_tracking'] ?? [];
+        $lastTracking = end($tracking);
+        $isAlreadyReady = $lastTracking && $lastTracking['status'] === 'جاهز للتسليم لشركة النقل';
+
+        if ($isAlreadyReady) {
+            return response()->json([
+                'status' => false,
+                'message' => 'هذا الطلب تم تسليمه مسبقاً لشركة النقل'
+            ], 409);
+        }
+    } catch (\Exception $e) {
+        // Continue without blocking if Sabeq query fails
     }
 
     return response()->json([
