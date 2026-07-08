@@ -64,6 +64,21 @@ class OrderController extends Controller
             ], 422);
         }
 
+            $risk = \App\Services\CustomerRiskService::getStats($request->customer_phone);
+
+            if ($risk['level'] === 'yellow') {
+                Log::warning('Order rejected due to high risk customer (Site)', [
+                    'phone' => $request->customer_phone,
+                    'returned_count' => $risk['returned_count'],
+                    'return_rate' => $risk['return_rate'],
+                ]);
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'عذراً، لا يمكن إتمام هذا الطلب حالياً. يرجى التواصل معنا مباشرة عبر الهاتف لإتمام طلبك.'
+                ], 403);
+            }
+
         // Calculate delivery price server-side based on city_name
         // DO NOT trust any price sent from frontend for security
         $deliveryPrice = DeliveryPriceService::calculatePriceFromCityName($request->city_name);

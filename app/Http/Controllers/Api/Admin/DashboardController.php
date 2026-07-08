@@ -10,6 +10,7 @@ use App\Models\City;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -29,8 +30,9 @@ class DashboardController extends Controller
 
         // المبيعات
         $totalSales = Order::where('status', 'completed')->sum('total');
-        $totalNetAmount = Order::where('status', 'completed')->sum('total'); // Sum of all total (net amounts)
-        $totalDeliveryPrice = Order::where('status', 'completed')->sum('delivery_price'); // Sum of all delivery prices
+        $totalDeliveryPrice = Order::where('status', 'completed')->sum('delivery_price');
+        $totalNetAmount = $totalSales - $totalDeliveryPrice; // صافي بعد خصم التوصيل
+
         $todaySales = Order::where('status', 'completed')
             ->whereDate('created_at', today())
             ->sum('total');
@@ -90,6 +92,75 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // ================= تفاصيل الطلبات الملغاة (عام) =================
+        $today = Carbon::today();
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $daysElapsedInMonth = Carbon::now()->day;
+
+        $cancelledToday = Order::where('status', 'cancelled')
+            ->whereDate('updated_at', $today)->count();
+
+        $cancelledThisWeek = Order::where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfWeek)->count();
+
+        $cancelledThisMonth = Order::where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)->count();
+
+        $cancelledValueTotal = Order::where('status', 'cancelled')->sum('total');
+        $cancelledValueToday = Order::where('status', 'cancelled')
+            ->whereDate('updated_at', $today)->sum('total');
+        $cancelledValueThisMonth = Order::where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)->sum('total');
+
+        $cancellationRateOverall = $totalOrders > 0
+            ? round(($cancelledOrders / $totalOrders) * 100, 2) : 0;
+
+        $totalOrdersThisMonth = Order::where('created_at', '>=', $startOfMonth)->count();
+        $cancellationRateThisMonth = $totalOrdersThisMonth > 0
+            ? round(($cancelledThisMonth / $totalOrdersThisMonth) * 100, 2) : 0;
+
+        $avgCancelledPerDay = $daysElapsedInMonth > 0
+            ? round($cancelledThisMonth / $daysElapsedInMonth, 2) : 0;
+
+        $cancelledLast7Days = Order::where('status', 'cancelled')
+            ->where('updated_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+            ->selectRaw('DATE(updated_at) as date, COUNT(*) as count, SUM(total) as value')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // ================= الطلبات الملغاة حسب الفرع (المستخدم) =================
+        // بيربط كل طلب ملغي بصاحبه (الفرع) عشان نعرف مين بيرجّعله طلبات أكتر
+        $cancelledByBranch = Order::where('status', 'cancelled')
+            ->join('users', 'orders.user_id', '=', 'users.id')
+            ->select(
+                'users.id as user_id',
+                'users.name as branch_name',
+                DB::raw('COUNT(orders.id) as cancelled_count'),
+                DB::raw('SUM(orders.total) as cancelled_value'),
+                DB::raw('SUM(CASE WHEN DATE(orders.updated_at) = CURDATE() THEN 1 ELSE 0 END) as cancelled_today'),
+                DB::raw('SUM(CASE WHEN orders.updated_at >= "' . $startOfMonth . '" THEN 1 ELSE 0 END) as cancelled_this_month')
+            )
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('cancelled_count')
+            ->get();
+
+        // نسبة إلغاء كل فرع من إجمالي طلباته (يحتاج استعلام منفصل لإجمالي طلبات كل فرع)
+        $totalOrdersByBranch = Order::join('users', 'orders.user_id', '=', 'users.id')
+            ->select('users.id as user_id', DB::raw('COUNT(orders.id) as total_count'))
+            ->groupBy('users.id')
+            ->pluck('total_count', 'user_id');
+
+        $cancelledByBranch = $cancelledByBranch->map(function ($branch) use ($totalOrdersByBranch) {
+            $branchTotal = $totalOrdersByBranch[$branch->user_id] ?? 0;
+            $branch->cancellation_rate = $branchTotal > 0
+                ? round(($branch->cancelled_count / $branchTotal) * 100, 2) . '%'
+                : '0%';
+            $branch->cancelled_value = (float) $branch->cancelled_value;
+            return $branch;
+        });
+
         return response()->json([
             'status' => true,
             'data' => [
@@ -109,6 +180,19 @@ class DashboardController extends Controller
                     'today_sales' => (float) $todaySales,
                     'month_sales' => (float) $monthSales,
                 ],
+                'cancelled_details' => [
+                    'today' => $cancelledToday,
+                    'this_week' => $cancelledThisWeek,
+                    'this_month' => $cancelledThisMonth,
+                    'value_total' => (float) $cancelledValueTotal,
+                    'value_today' => (float) $cancelledValueToday,
+                    'value_this_month' => (float) $cancelledValueThisMonth,
+                    'cancellation_rate_overall' => $cancellationRateOverall . '%',
+                    'cancellation_rate_this_month' => $cancellationRateThisMonth . '%',
+                    'avg_cancelled_per_day_this_month' => $avgCancelledPerDay,
+                    'last_7_days_breakdown' => $cancelledLast7Days,
+                ],
+                'cancelled_by_branch' => $cancelledByBranch,
                 'charts' => [
                     'last_7_days' => $last7Days,
                     'last_6_months' => $last6Months,

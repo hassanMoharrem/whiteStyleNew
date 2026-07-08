@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\DeliveryPriceService;
+use Carbon\Carbon;
+use App\Services\CustomerRiskService;
 
 class OrderController extends Controller
 {
@@ -43,6 +45,22 @@ class OrderController extends Controller
         $limit = $request->get('limit', 10);
         $orders = $query->paginate($limit);
 
+        $phones = collect($orders->items())->pluck('customer_phone')->unique()->values()->all();
+        $riskMap = \App\Services\CustomerRiskService::getStatsForPhones($phones);
+
+        $ordersData = $orders->toArray();
+        $ordersData['data'] = collect($orders->items())->map(function ($order) use ($riskMap) {
+            $arr = $order->toArray();
+            $arr['customer_risk'] = $riskMap[$order->customer_phone] ?? null;
+            return $arr;
+        })->all();
+
+        return response()->json([
+            'status' => true,
+            'data' => ['orders' => $ordersData],
+            'message' => 'تم جلب الطلبات بنجاح'
+        ]);
+
         return response()->json([
             'status' => true,
             'data' => [
@@ -55,19 +73,97 @@ class OrderController extends Controller
     /**
      * Get user order statistics
      */
+
     public function stats(Request $request)
     {
         $user = $request->user();
+        $baseQuery = fn() => Order::where('user_id', $user->id);
+
+        $today = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $daysElapsedInMonth = Carbon::now()->day; // كم يوم مضى من الشهر الحالي
 
         $stats = [
-            'total_orders' => Order::where('user_id', $user->id)->count(),
-            'total_value' => Order::where('user_id', $user->id)->where('status','completed')->sum('total'),
-            'total_amount' => Order::where('user_id', $user->id)->where('status', 'completed')->sum('total'),
-            'total_delivery_price' => Order::where('user_id', $user->id)->where('status', 'completed')->sum('delivery_price'),
-            'pending' => Order::where('user_id', $user->id)->where('status', 'pending')->count(),
-            'processing' => Order::where('user_id', $user->id)->where('status', 'processing')->count(),
-            'completed' => Order::where('user_id', $user->id)->where('status', 'completed')->count(),
-            'cancelled' => Order::where('user_id', $user->id)->where('status', 'cancelled')->count(),
+            'total_orders' => $baseQuery()->count(),
+            'total_value' => $baseQuery()->where('status', 'completed')->sum('total'),
+            'total_amount' => $baseQuery()->where('status', 'completed')->sum('total'),
+            'total_delivery_price' => $baseQuery()->where('status', 'completed')->sum('delivery_price'),
+            'pending' => $baseQuery()->where('status', 'pending')->count(),
+            'processing' => $baseQuery()->where('status', 'processing')->count(),
+            'completed' => $baseQuery()->where('status', 'completed')->count(),
+            'cancelled' => $baseQuery()->where('status', 'cancelled')->count(),
+        ];
+
+        // ================= تفاصيل الطلبات الملغاة =================
+        $cancelledToday = $baseQuery()
+            ->where('status', 'cancelled')
+            ->whereDate('updated_at', $today)
+            ->count();
+
+        $cancelledThisWeek = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfWeek)
+            ->count();
+
+        $cancelledThisMonth = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)
+            ->count();
+
+        $cancelledTotalValue = $baseQuery()
+            ->where('status', 'cancelled')
+            ->sum('total');
+
+        $cancelledValueThisMonth = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)
+            ->sum('total');
+
+        $cancelledValueToday = $baseQuery()
+            ->where('status', 'cancelled')
+            ->whereDate('updated_at', $today)
+            ->sum('total');
+
+        // نسبة الإلغاء من إجمالي الطلبات (كم بالمية بترجع)
+        $cancellationRate = $stats['total_orders'] > 0
+            ? round(($stats['cancelled'] / $stats['total_orders']) * 100, 2)
+            : 0;
+
+        // نسبة الإلغاء لهاد الشهر تحديداً (من الطلبات اللي صارت هاد الشهر)
+        $totalOrdersThisMonth = $baseQuery()
+            ->where('created_at', '>=', $startOfMonth)
+            ->count();
+
+        $cancellationRateThisMonth = $totalOrdersThisMonth > 0
+            ? round(($cancelledThisMonth / $totalOrdersThisMonth) * 100, 2)
+            : 0;
+
+        // معدل الطلبات المرجعة باليوم (خلال الشهر الحالي)
+        $avgCancelledPerDay = $daysElapsedInMonth > 0
+            ? round($cancelledThisMonth / $daysElapsedInMonth, 2)
+            : 0;
+
+        // توزيع الإلغاء آخر 7 أيام (مفيد لعمل رسم بياني بالفرونت)
+        $last7Days = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+            ->selectRaw('DATE(updated_at) as date, COUNT(*) as count, SUM(total) as value')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $stats['cancelled_details'] = [
+            'today' => $cancelledToday,
+            'this_week' => $cancelledThisWeek,
+            'this_month' => $cancelledThisMonth,
+            'total_value' => $cancelledTotalValue,
+            'value_today' => $cancelledValueToday,
+            'value_this_month' => $cancelledValueThisMonth,
+            'cancellation_rate_overall' => $cancellationRate . '%',
+            'cancellation_rate_this_month' => $cancellationRateThisMonth . '%',
+            'avg_cancelled_per_day_this_month' => $avgCancelledPerDay,
+            'last_7_days_breakdown' => $last7Days,
         ];
 
         return response()->json([
@@ -76,6 +172,15 @@ class OrderController extends Controller
                 'stats' => $stats
             ],
             'message' => 'تم جلب الإحصائيات بنجاح'
+        ]);
+    }
+    public function customerRisk(Request $request)
+    {
+        $request->validate(['phone' => 'required|string']);
+
+        return response()->json([
+            'status' => true,
+            'data' => CustomerRiskService::getStats($request->phone)
         ]);
     }
 
@@ -145,12 +250,12 @@ class OrderController extends Controller
             $sabeqResponse = $sabeq->createParcelUser($order, $areaId, $request->street_id);
 
             if (isset($sabeqResponse['track_number'])) {
-            $order->update([
-                'track_number' => $sabeqResponse['track_number'],
-                'status' => 'completed'
-            ]);
-            // $sabeq->markAsReady($sabeqResponse['track_number']);
-        }
+                $order->update([
+                    'track_number' => $sabeqResponse['track_number'],
+                    'status' => 'completed'
+                ]);
+                // $sabeq->markAsReady($sabeqResponse['track_number']);
+            }
         } catch (\Exception $e) {
             Log::error('Sabeq parcel creation failed: ' . $e->getMessage());
             // Continue without failing the order creation
@@ -279,7 +384,7 @@ class OrderController extends Controller
             'data' => ['order' => $order],
             'message' => 'تم إلغاء الطلب بنجاح'
         ]);
-    }    
+    }
     public function completed(Request $request, $id)
     {
         $user = $request->user();
@@ -308,8 +413,8 @@ class OrderController extends Controller
 
         //         Log::info('Sabeq completed response: ' . json_encode($sabeqResponse));
         //     } catch (\Exception $e) {
-                // Log::error('Sabeq parcel completed failed: ' . $e->getMessage());
-                // Continue with local completed even if Sabeq fails
+        // Log::error('Sabeq parcel completed failed: ' . $e->getMessage());
+        // Continue with local completed even if Sabeq fails
         //     }
         // }
 
@@ -324,22 +429,22 @@ class OrderController extends Controller
         ]);
     }
     public function print(Request $request, $id)
-{
-    $user = $request->user();
-    $order = Order::where('user_id', $user->id)->findOrFail($id);
+    {
+        $user = $request->user();
+        $order = Order::where('user_id', $user->id)->findOrFail($id);
 
-    if (!$order->track_number) {
-        return response()->json([
-            'status' => false,
-            'message' => 'لا يوجد رقم تتبع لهذا الطلب'
-        ], 404);
+        if (!$order->track_number) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد رقم تتبع لهذا الطلب'
+            ], 404);
+        }
+
+        $sabeq = new \App\Services\SabeqService($user);
+        $html = $sabeq->printParcel($order->track_number);
+
+        return response($html)->header('Content-Type', 'text/html');
     }
-
-    $sabeq = new \App\Services\SabeqService($user);
-    $html = $sabeq->printParcel($order->track_number);
-
-    return response($html)->header('Content-Type', 'text/html');
-}
 
     /**
      * Remove the specified order (only if status is pending)
@@ -373,66 +478,143 @@ class OrderController extends Controller
     }
 
 
-public function findByTrackNumber(Request $request)
-{
-    $user = $request->user();
-    $trackNumber = $request->track_number;
+    public function findByTrackNumber(Request $request)
+    {
+        $user = $request->user();
+        $trackNumber = $request->track_number;
 
-    $order = Order::where('user_id', $user->id)
-        ->where('track_number', $trackNumber)
-        ->first();
+        $order = Order::where('user_id', $user->id)
+            ->where('track_number', $trackNumber)
+            ->first();
 
-    if (!$order) {
-        return response()->json([
-            'status' => false,
-            'message' => 'لا يوجد طلب بهذا الرقم'
-        ], 404);
-    }
-
-    try {
-        $sabeq = new \App\Services\SabeqService($user);
-        $sabeqResponse = $sabeq->informationParcel($trackNumber);
-
-        $tracking = $sabeqResponse['parcel_tracking'] ?? [];
-        $lastTracking = end($tracking);
-        $isAlreadyReady = $lastTracking && $lastTracking['status'] === 'جاهز للتسليم لشركة النقل';
-
-        if ($isAlreadyReady) {
+        if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'هذا الطلب تم تسليمه مسبقاً لشركة النقل'
-            ], 409);
+                'message' => 'لا يوجد طلب بهذا الرقم'
+            ], 404);
         }
-    } catch (\Exception $e) {
-        // Continue without blocking if Sabeq query fails
-    }
 
-    return response()->json([
-        'status' => true,
-        'data' => ['order' => $order]
-    ]);
-}
-public function bulkMarkReady(Request $request)
-{
-    $user = $request->user();
-    $trackNumbers = $request->track_numbers; // array
-
-    $sabeq = new \App\Services\SabeqService($user);
-    $results = [];
-
-    foreach ($trackNumbers as $trackNumber) {
         try {
-            $sabeq->markAsReady($trackNumber);
-            $results[$trackNumber] = 'success';
+            $sabeq = new \App\Services\SabeqService($user);
+            $sabeqResponse = $sabeq->informationParcel($trackNumber);
+
+            $tracking = $sabeqResponse['parcel_tracking'] ?? [];
+            $lastTracking = end($tracking);
+            $isAlreadyReady = $lastTracking && $lastTracking['status'] === 'جاهز للتسليم لشركة النقل';
+
+            if ($isAlreadyReady) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'هذا الطلب تم تسليمه مسبقاً لشركة النقل'
+                ], 409);
+            }
         } catch (\Exception $e) {
-            $results[$trackNumber] = 'failed';
+            // Continue without blocking if Sabeq query fails
         }
+
+        return response()->json([
+            'status' => true,
+            'data' => ['order' => $order]
+        ]);
+    }
+    public function bulkMarkReady(Request $request)
+    {
+        $user = $request->user();
+        $trackNumbers = $request->track_numbers; // array
+
+        $sabeq = new \App\Services\SabeqService($user);
+        $results = [];
+
+        foreach ($trackNumbers as $trackNumber) {
+            try {
+                $sabeq->markAsReady($trackNumber);
+                $results[$trackNumber] = 'success';
+            } catch (\Exception $e) {
+                $results[$trackNumber] = 'failed';
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => ['results' => $results],
+            'message' => 'تم تسليم الطلبات لشركة النقل'
+        ]);
     }
 
-    return response()->json([
-        'status' => true,
-        'data' => ['results' => $results],
-        'message' => 'تم تسليم الطلبات لشركة النقل'
-    ]);
-}
+    public function findByTrackNumberForReturn(Request $request)
+    {
+        $user = $request->user();
+        $trackNumber = $request->track_number;
+
+        $order = Order::where('user_id', $user->id)
+            ->where('track_number', $trackNumber)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد طلب بهذا الرقم'
+            ], 404);
+        }
+
+        try {
+            $sabeq = new \App\Services\SabeqService($user);
+            $sabeqResponse = $sabeq->informationParcel($trackNumber);
+
+            $tracking = $sabeqResponse['parcel_tracking'] ?? [];
+            $lastTracking = end($tracking);
+            $isReadyForDelivery = $lastTracking && $lastTracking['status'] === 'جاهز للتسليم لشركة النقل';
+
+            if (!$isReadyForDelivery) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'هذا الطلب لم يتم تسليمه لشركة النقل بعد، لا يمكن إرجاعه'
+                ], 409);
+            }
+        } catch (\Exception $e) {
+            Log::error('Sabeq check failed for return validation ' . $trackNumber . ': ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'تعذر التحقق من حالة الطلب، حاول مرة أخرى'
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => ['order' => $order]
+        ]);
+    }
+    public function bulkCancel(Request $request)
+    {
+        $user = $request->user();
+        $trackNumbers = $request->track_numbers; // array
+
+        $sabeq = new \App\Services\SabeqService($user);
+        $results = [];
+
+        foreach ($trackNumbers as $trackNumber) {
+            try {
+                $sabeq->cancelParcel($trackNumber);
+
+                Order::where('user_id', $user->id)
+                    ->where('track_number', $trackNumber)
+                    ->update([
+                        'status' => 'cancelled',
+                        'returned_after_dispatch' => true, // مؤشر: كان جاهز للتسليم ورجع
+                    ]);
+
+                $results[$trackNumber] = 'success';
+            } catch (\Exception $e) {
+                Log::error('Sabeq bulk cancel failed for ' . $trackNumber . ': ' . $e->getMessage());
+                $results[$trackNumber] = 'failed';
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => ['results' => $results],
+            'message' => 'تم إلغاء الطلبات المحددة'
+        ]);
+    }
 }

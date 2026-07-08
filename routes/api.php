@@ -132,6 +132,12 @@ Route::prefix('user')->group(function () {
         Route::get('/orders/{id}/print', [App\Http\Controllers\Api\User\OrderController::class, 'print']);
         Route::post('/orders/find-by-track', [App\Http\Controllers\Api\User\OrderController::class, 'findByTrackNumber']);
         Route::post('/orders/bulk-mark-ready', [App\Http\Controllers\Api\User\OrderController::class, 'bulkMarkReady']);
+        // findByTrackNumberForReturn
+        Route::post('/orders/find-by-track-for-return', [App\Http\Controllers\Api\User\OrderController::class, 'findByTrackNumberForReturn']);
+        // bulkCancel
+        Route::post('/orders/bulk-cancel', [App\Http\Controllers\Api\User\OrderController::class, 'bulkCancel']);
+        // Customer Risk
+        Route::get('/orders/customer/risk', [App\Http\Controllers\Api\User\OrderController::class, 'customerRisk']);
 
     });
 });
