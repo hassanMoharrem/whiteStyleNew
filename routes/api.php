@@ -138,6 +138,8 @@ Route::prefix('user')->group(function () {
         Route::post('/orders/bulk-cancel', [App\Http\Controllers\Api\User\OrderController::class, 'bulkCancel']);
         // Customer Risk
         Route::get('/orders/customer/risk', [App\Http\Controllers\Api\User\OrderController::class, 'customerRisk']);
+        Route::get('/orders/{id}/track', [App\Http\Controllers\Api\User\OrderController::class, 'trackParcel']);
+
 
     });
 });

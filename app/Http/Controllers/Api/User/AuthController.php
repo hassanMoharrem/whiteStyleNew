@@ -38,6 +38,7 @@ class AuthController extends Controller
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
+                        'slug' => $user->slug,
                     ]
                 ],
                 'message' => 'تم تسجيل الدخول بنجاح'
@@ -74,6 +75,7 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'slug' => $user->slug,
                 ]
             ],
             'message' => 'تم جلب بيانات المستخدم بنجاح'

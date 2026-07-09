@@ -60,14 +60,6 @@ class OrderController extends Controller
             'data' => ['orders' => $ordersData],
             'message' => 'تم جلب الطلبات بنجاح'
         ]);
-
-        return response()->json([
-            'status' => true,
-            'data' => [
-                'orders' => $orders
-            ],
-            'message' => 'تم جلب الطلبات بنجاح'
-        ]);
     }
 
     /**
@@ -87,7 +79,7 @@ class OrderController extends Controller
         $stats = [
             'total_orders' => $baseQuery()->count(),
             'total_value' => $baseQuery()->where('status', 'completed')->sum('total'),
-            'total_amount' => $baseQuery()->where('status', 'completed')->sum('total'),
+            'total_amount' => $baseQuery()->where('status', 'completed')->sum('subtotal'),
             'total_delivery_price' => $baseQuery()->where('status', 'completed')->sum('delivery_price'),
             'pending' => $baseQuery()->where('status', 'pending')->count(),
             'processing' => $baseQuery()->where('status', 'processing')->count(),
@@ -200,7 +192,7 @@ class OrderController extends Controller
             'city_name' => 'required|string|max:255',
             'area_name' => 'required|string|max:255',
             'street_name' => 'nullable|string|max:255',
-            'address' => 'required|string|max:500',
+            'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string|max:1000',
@@ -234,7 +226,7 @@ class OrderController extends Controller
             'city_name' => $request->city_name,
             'area_name' => $request->area_name,
             'street_name' => $request->street_name ?? '',
-            'address' => $request->address,
+            'address' => $request->address ?? '',
             'description' => $request->notes ?? '',
             'items' => $request->items,
             'subtotal' => $subtotal,
@@ -294,51 +286,54 @@ class OrderController extends Controller
      * Update the specified order (only if status is pending)
      */
     public function update(Request $request, $id)
-    {
-        $user = $request->user();
-        $order = Order::where('user_id', $user->id)->find($id);
+{
+    $user = $request->user();
+    $order = Order::where('user_id', $user->id)->find($id);
 
-        if (!$order) {
-            return response()->json([
-                'status' => false,
-                'message' => 'الطلب غير موجود'
-            ], 404);
-        }
-
-        // Only allow updates for pending orders
-        if ($order->status !== 'pending') {
-            return response()->json([
-                'status' => false,
-                'message' => 'لا يمكن تعديل الطلب إلا إذا كان في حالة "قيد الانتظار"'
-            ], 403);
-        }
-
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
-            'city_name' => 'required|string|max:255',
-            'area_name' => 'required|string|max:255',
-            'street_name' => 'nullable|string|max:255',
-            'address' => 'required|string|max:500',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
-        $order->update([
-            'customer_name' => $request->customer_name,
-            'customer_phone' => $request->customer_phone,
-            'city_name' => $request->city_name,
-            'area_name' => $request->area_name,
-            'street_name' => $request->street_name ?? '',
-            'address' => $request->address,
-            'description' => $request->notes ?? '',
-        ]);
-
+    if (!$order) {
         return response()->json([
-            'status' => true,
-            'data' => ['order' => $order],
-            'message' => 'تم تحديث الطلب بنجاح'
-        ]);
+            'status' => false,
+            'message' => 'الطلب غير موجود'
+        ], 404);
     }
+
+    if ($order->status === 'cancelled') {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يمكن تعديل طلب ملغي'
+        ], 403);
+    }
+
+    $request->validate([
+        'customer_name' => 'required|string|max:255',
+        'customer_phone' => 'required|string|max:20',
+        'city_name' => 'required|string|max:255',
+        'area_name' => 'required|string|max:255',
+        'street_name' => 'nullable|string|max:255',
+        'address' => 'nullable|string|max:500',
+        'notes' => 'nullable|string|max:1000',
+        'items' => 'nullable|array',
+        'items.*.description' => 'required_with:items|string|max:1000',
+        'items.*.price' => 'required_with:items|numeric|min:0',
+    ]);
+
+    $order->update([
+        'customer_name' => $request->customer_name,
+        'customer_phone' => $request->customer_phone,
+        'city_name' => $request->city_name,
+        'area_name' => $request->area_name,
+        'street_name' => $request->street_name ?? '',
+        'address' => $request->address ?? '',
+        'description' => $request->notes ?? '',
+        'items' => $request->items ?? $order->items,
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'data' => ['order' => $order],
+        'message' => 'تم تحديث الطلب بنجاح'
+    ]);
+}
 
     /**
      * Cancel the specified order
@@ -396,27 +391,6 @@ class OrderController extends Controller
                 'message' => 'الطلب غير موجود'
             ], 404);
         }
-
-        // Only allow cancellation for pending or processing orders
-        // if (!in_array($order->status, ['pending', 'processing'])) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'لا يمكن إلغاء هذا الطلب'
-        //     ], 403);
-        // }
-
-        // Cancel on Sabeq if track_number exists
-        // if ($order->track_number) {
-        //     try {
-        //         $sabeq = new \App\Services\SabeqService($user);
-        //         $sabeqResponse = $sabeq->markAsReady($order->track_number);
-
-        //         Log::info('Sabeq completed response: ' . json_encode($sabeqResponse));
-        //     } catch (\Exception $e) {
-        // Log::error('Sabeq parcel completed failed: ' . $e->getMessage());
-        // Continue with local completed even if Sabeq fails
-        //     }
-        // }
 
 
         // Update order status
@@ -517,6 +491,43 @@ class OrderController extends Controller
             'data' => ['order' => $order]
         ]);
     }
+    public function trackParcel(Request $request, $id)
+{
+    $user = $request->user();
+    $order = Order::where('user_id', $user->id)->find($id);
+
+    if (!$order) {
+        return response()->json([
+            'status' => false,
+            'message' => 'الطلب غير موجود'
+        ], 404);
+    }
+
+    if (!$order->track_number) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد رقم تتبع لهذا الطلب'
+        ], 404);
+    }
+
+    try {
+        $sabeq = new \App\Services\SabeqService($user);
+        $parcel = $sabeq->informationParcel($order->track_number);
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'order' => $order,
+                'parcel' => $parcel
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'فشل جلب بيانات الطرد من شركة النقل'
+        ], 500);
+    }
+}
     public function bulkMarkReady(Request $request)
     {
         $user = $request->user();
