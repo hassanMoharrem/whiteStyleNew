@@ -777,6 +777,10 @@ public function update(Request $request, $id)
         $parcel = $sabeq->informationParcel($order->track_number);
  
         if (!empty($parcel['status'])) {
+            // when cancelled or returned, we should also update the order status accordingly
+            if (in_array($parcel['status'], ['cancelled', 'returned'])) {
+                $updates['status'] = $parcel['status'];
+            }
             $order->update([
                 'delivery_status' => $parcel['status'],
                 'delivery_status_updated_at' => now(),
