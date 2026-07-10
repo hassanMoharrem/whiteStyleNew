@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Api\SabeqWebhookController;
 
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\Admin\SliderController;
@@ -46,6 +47,8 @@ Route::post('/site/subscribe', [SubscribeController::class, 'store']);
 Route::get('/sabeq/areas', [SabeqController::class, 'areas']);
 Route::get('/sabeq/parcel/{orderId}/{trackNumber}', [SiteOrderController::class, 'informationParcel']);
 Route::post('/sabeq/parcel/cancel/{orderId}/{trackNumber}', [SiteOrderController::class, 'cancelParcel']);
+// Webhooks sqbeq
+Route::post('/webhooks/sabeq', [SabeqWebhookController::class, 'handle']);
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
 
@@ -139,7 +142,7 @@ Route::prefix('user')->group(function () {
         // Customer Risk
         Route::get('/orders/customer/risk', [App\Http\Controllers\Api\User\OrderController::class, 'customerRisk']);
         Route::get('/orders/{id}/track', [App\Http\Controllers\Api\User\OrderController::class, 'trackParcel']);
-
+        Route::post('/orders/{id}/refresh-delivery-status', [App\Http\Controllers\Api\User\OrderController::class, 'refreshDeliveryStatus']);    
 
     });
 });

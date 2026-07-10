@@ -23,19 +23,57 @@ class SabeqService
 
         return $response->json('auth_token');
     }
-
-    private function verificationToken()
+    public function updateParcel($trackNumber, array $data)
     {
-        $authToken = $this->authToken();
-        $profileId = $this->user?->sabeq_profile_id ?? env('SABEQ_PROFILE_ID');
-        $apiKey = $this->user?->sabeq_api_key ?? env('SABEQ_API_KEY');
-        $response = Http::post('https://sabeq.ps/api/v1/verify_business', [
-            'auth_token' => $authToken,
-            'profile_id' => $profileId,
-            'api_key' => $apiKey,
+        $verificationToken = $this->verificationToken();
+
+        $payload = array_merge(
+            ['verification_token' => $verificationToken],
+            $data
+        );
+
+        Log::info('Sabeq Update Parcel Request', [
+            'track_number' => $trackNumber,
+            'payload' => $payload
         ]);
 
-        return $response->json('verification_token');
+        $response = Http::patch("https://sabeq.ps/api/v1/parcels/{$trackNumber}", $payload);
+
+        $responseData = $response->json();
+
+        Log::info('Sabeq Update Parcel Response', [
+            'status' => $response->status(),
+            'data' => $responseData
+        ]);
+
+        return $responseData;
+    }
+
+private function verificationToken()
+    {
+        // كاش لكل مستخدم لحاله — عشان توكن مستخدم ما يروح لمستخدم ثاني
+        $cacheKey = 'sabeq_verification_token_' . ($this->user?->id ?? 'default');
+
+        return Cache::remember($cacheKey, now()->addMinutes(4), function () {
+            $authToken = $this->authToken();
+            $profileId = $this->user?->sabeq_profile_id ?? env('SABEQ_PROFILE_ID');
+            $apiKey = $this->user?->sabeq_api_key ?? env('SABEQ_API_KEY');
+
+            $response = Http::post('https://sabeq.ps/api/v1/verify_business', [
+                'auth_token' => $authToken,
+                'profile_id' => $profileId,
+                'api_key' => $apiKey,
+            ]);
+
+            $token = $response->json('verification_token');
+
+            // لا تخزّن فشل — لو التوكن ما رجع، ارمِ exception عشان الكاش ما ينحفظ
+            if (empty($token)) {
+                throw new \Exception('Sabeq verification failed: ' . $response->body());
+            }
+
+            return $token;
+        });
     }
 
     public function getAreas()
@@ -86,7 +124,7 @@ class SabeqService
             'street_id' => $street_id ?? '',
             'address' => $order->address,
             'location_url' => $order->location_url ?? '',
-            'delivery_notes' => $order->delivery_notes ?? '',
+            'delivery_notes' => $order->description ?? '',
             'special_notes' => '',
             'service_type' => 'pay_delivery',
         ];

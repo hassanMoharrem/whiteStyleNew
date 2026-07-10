@@ -22,6 +22,8 @@ class Order extends Model
         'status',
         'track_number',
         'service_type',
+        'delivery_status',
+        'delivery_status_updated_at',
     ];
 
     protected $casts = [
@@ -29,6 +31,7 @@ class Order extends Model
         'subtotal' => 'decimal:2',
         'delivery_price' => 'decimal:2',
         'total' => 'decimal:2',
+        'delivery_status_updated_at' => 'datetime',
     ];
 
     /**

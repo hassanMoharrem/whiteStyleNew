@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'sabeq' => [
+        'webhook_secret' => env('SABEQ_WEBHOOK_SECRET'),
+    ],
 
 ];
