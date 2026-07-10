@@ -377,6 +377,14 @@ public function update(Request $request, $id)
             'message' => 'لا يمكن تعديل طلب ملغي'
         ], 403);
     }
+    // It is possible to update a parcel if the parcel is in the initial statuses.
+
+    if ($order->track_number && !in_array($order->delivery_status, ['created', 'packed_ready', 'warehouse'])) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يمكن تعديل الطلب بعد أن تم شحنه أو تسليمه'
+        ], 403);
+    }
 
     $request->validate([
         'customer_name' => 'required|string|max:255',

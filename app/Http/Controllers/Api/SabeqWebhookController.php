@@ -79,10 +79,14 @@ class SabeqWebhookController extends Controller
             return response()->json(['status' => 'ok']);
         }
 
-        // ===== 5. تحديث حالة التوصيل =====
+        // ===== 5. تحديث حالة التوصيل  +  تحديث حالة الطرد لما يلتغي=====
         $updates = [];
 
         if (!empty($newStatus) && in_array($newStatus, self::VALID_STATUSES, true)) {
+            if ($newStatus === 'cancelled') {
+                // إذا أرسل سابق حالة "ملغى"، نعتبر الطلب ملغى عندنا أيضاً
+                $updates['status'] = 'cancelled';
+            }
             $updates['delivery_status'] = $newStatus;
             $updates['delivery_status_updated_at'] = now();
         } elseif (!empty($newStatus)) {
