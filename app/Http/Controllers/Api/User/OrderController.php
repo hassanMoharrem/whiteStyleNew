@@ -777,14 +777,19 @@ public function update(Request $request, $id)
         $parcel = $sabeq->informationParcel($order->track_number);
  
         if (!empty($parcel['status'])) {
-            // when cancelled or returned, we should also update the order status accordingly
-            if (in_array($parcel['status'], ['cancelled', 'returned'])) {
-                $updates['status'] = $parcel['status'];
+            // when parcel status == cancelled, we should also update the order status to cancelled
+            if ($parcel['status'] === 'cancelled' || $parcel['status'] === 'returned') {
+                $order->update([
+                    'status' => 'cancelled',
+                    'delivery_status' => $parcel['status'],
+                    'delivery_status_updated_at' => now(),
+                ]);
+            } else {
+                $order->update([
+                    'delivery_status' => $parcel['status'],
+                    'delivery_status_updated_at' => now(),
+                ]);
             }
-            $order->update([
-                'delivery_status' => $parcel['status'],
-                'delivery_status_updated_at' => now(),
-            ]);
         }
  
         return response()->json([
