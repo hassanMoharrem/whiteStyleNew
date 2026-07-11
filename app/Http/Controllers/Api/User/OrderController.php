@@ -35,6 +35,14 @@ class OrderController extends Controller
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
+        // 🆕 Filter by delivery status
+        if ($request->filled('delivery_status') && $request->delivery_status !== 'all') {
+            if ($request->delivery_status === 'not_sent') {
+                $query->whereNull('delivery_status');
+            } else {
+                $query->where('delivery_status', $request->delivery_status);
+            }
+        }
 
         // Sort
         $sortBy = $request->get('sort_by', 'created_at');
@@ -54,10 +62,19 @@ class OrderController extends Controller
             $arr['customer_risk'] = $riskMap[$order->customer_phone] ?? null;
             return $arr;
         })->all();
+        // 🆕 عدادات حالات التوصيل لشريط الفلاتر
+        $deliveryCounts = Order::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->selectRaw("COALESCE(delivery_status, 'not_sent') as ds, COUNT(*) as cnt")
+            ->groupBy('ds')
+            ->pluck('cnt', 'ds');
 
         return response()->json([
             'status' => true,
-            'data' => ['orders' => $ordersData],
+            'data' => [
+                'orders' => $ordersData, 
+                'delivery_counts' => $deliveryCounts
+            ],
             'message' => 'تم جلب الطلبات بنجاح'
         ]);
     }
