@@ -84,181 +84,200 @@ class OrderController extends Controller
      */
 
     public function stats(Request $request)
-{
-    $user = $request->user();
-    $baseQuery = fn() => Order::where('user_id', $user->id);
- 
-    $today = Carbon::today();
-    $startOfMonth = Carbon::now()->startOfMonth();
-    $startOfWeek = Carbon::now()->startOfWeek();
-    $daysElapsedInMonth = Carbon::now()->day;
- 
-    // ================= الإحصائيات القديمة (كما هي — للتوافق) =================
-    $stats = [
-        'total_orders' => $baseQuery()->count(),
-        'total_value' => $baseQuery()->where('status', 'completed')->sum('total'),
-        'total_amount' => $baseQuery()->where('status', 'completed')->sum('subtotal'),
-        'total_delivery_price' => $baseQuery()->where('status', 'completed')->sum('delivery_price'),
-        'pending' => $baseQuery()->where('status', 'pending')->count(),
-        'processing' => $baseQuery()->where('status', 'processing')->count(),
-        'completed' => $baseQuery()->where('status', 'completed')->count(),
-        'cancelled' => $baseQuery()->where('status', 'cancelled')->count(),
-    ];
- 
-    // ================= 🆕 المحاسبة الحقيقية حسب حالة التوصيل =================
- 
-    // 🟡 قيد التحصيل: طرود ماشية بالطريق (متوقعة، غير مضمونة)
-    $inTransitStatuses = ['created', 'packed_ready', 'warehouse', 'on_way'];
-    $inTransit = $baseQuery()
-        ->whereIn('delivery_status', $inTransitStatuses)
-        ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
-        ->first();
- 
-    // 🔵 عند شركة النقل: الزبون دفع، الفلوس عند سابق بانتظار المحاسبة
-    $atCarrier = $baseQuery()
-        ->where('delivery_status', 'delivered')
-        ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
-        ->first();
- 
-    // 🟢 المُحصّل: سابق حاسبونا وقبضنا القيمة
-    //    + الطلبات القديمة (NULL) المكتملة بالنظام القديم
-    $collected = $baseQuery()
-        ->where(function ($q) {
-            $q->where('delivery_status', 'completed')
-              ->orWhere(function ($q2) {
-                  $q2->whereNull('delivery_status')
-                     ->where('status', 'completed');
-              });
-        })
-        ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
-        ->first();
- 
-    // المُحصّل هذا الشهر (على أساس آخر تحديث حالة)
-    $collectedThisMonth = $baseQuery()
-        ->where('delivery_status', 'completed')
-        ->where('delivery_status_updated_at', '>=', $startOfMonth)
-        ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net')
-        ->first();
- 
-    // ⚠️ مفقود: على حساب شركة النقل — قيمته ستصلكم عند المحاسبة
-    $missing = $baseQuery()
-        ->where('delivery_status', 'missing')
-        ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(total),0) as gross')
-        ->first();
- 
-    // ↩️ راجع (حسب سابق): خرج من قيد التحصيل تلقائياً
-    $returnedCount = $baseQuery()->where('delivery_status', 'returned')->count();
- 
-    // توزيع عددي لكل حالة توصيل (للفرونت إذا احتجته)
-    $deliveryBreakdown = $baseQuery()
-        ->whereNotNull('delivery_status')
-        ->selectRaw('delivery_status, COUNT(*) as count')
-        ->groupBy('delivery_status')
-        ->pluck('count', 'delivery_status');
- 
-    $stats['delivery_finance'] = [
-        'in_transit' => [
-            'count' => (int) $inTransit->cnt,
-            'net'   => round((float) $inTransit->net, 2),   // الصافي المتوقع
-            'gross' => round((float) $inTransit->gross, 2), // الشامل (يحصّله السائق)
-        ],
-        'at_carrier' => [
-            'count' => (int) $atCarrier->cnt,
-            'net'   => round((float) $atCarrier->net, 2),
-            'gross' => round((float) $atCarrier->gross, 2),
-        ],
-        'collected' => [
-            'count' => (int) $collected->cnt,
-            'net'   => round((float) $collected->net, 2),   // ⭐ الرقم الحقيقي
-            'gross' => round((float) $collected->gross, 2),
-        ],
-        'collected_this_month' => [
-            'count' => (int) $collectedThisMonth->cnt,
-            'net'   => round((float) $collectedThisMonth->net, 2),
-        ],
-        'missing' => [
-            'count' => (int) $missing->cnt,
-            'gross' => round((float) $missing->gross, 2),
-        ],
-        'returned_count' => $returnedCount,
-        'breakdown' => $deliveryBreakdown,
-    ];
- 
-    // ================= تفاصيل الطلبات الملغاة (كما هي) =================
-    $cancelledToday = $baseQuery()
-        ->where('status', 'cancelled')
-        ->whereDate('updated_at', $today)
-        ->count();
- 
-    $cancelledThisWeek = $baseQuery()
-        ->where('status', 'cancelled')
-        ->where('updated_at', '>=', $startOfWeek)
-        ->count();
- 
-    $cancelledThisMonth = $baseQuery()
-        ->where('status', 'cancelled')
-        ->where('updated_at', '>=', $startOfMonth)
-        ->count();
- 
-    $cancelledTotalValue = $baseQuery()
-        ->where('status', 'cancelled')
-        ->sum('total');
- 
-    $cancelledValueThisMonth = $baseQuery()
-        ->where('status', 'cancelled')
-        ->where('updated_at', '>=', $startOfMonth)
-        ->sum('total');
- 
-    $cancelledValueToday = $baseQuery()
-        ->where('status', 'cancelled')
-        ->whereDate('updated_at', $today)
-        ->sum('total');
- 
-    $cancellationRate = $stats['total_orders'] > 0
-        ? round(($stats['cancelled'] / $stats['total_orders']) * 100, 2)
-        : 0;
- 
-    $totalOrdersThisMonth = $baseQuery()
-        ->where('created_at', '>=', $startOfMonth)
-        ->count();
- 
-    $cancellationRateThisMonth = $totalOrdersThisMonth > 0
-        ? round(($cancelledThisMonth / $totalOrdersThisMonth) * 100, 2)
-        : 0;
- 
-    $avgCancelledPerDay = $daysElapsedInMonth > 0
-        ? round($cancelledThisMonth / $daysElapsedInMonth, 2)
-        : 0;
- 
-    $last7Days = $baseQuery()
-        ->where('status', 'cancelled')
-        ->where('updated_at', '>=', Carbon::now()->subDays(6)->startOfDay())
-        ->selectRaw('DATE(updated_at) as date, COUNT(*) as count, SUM(total) as value')
-        ->groupBy('date')
-        ->orderBy('date')
-        ->get();
- 
-    $stats['cancelled_details'] = [
-        'today' => $cancelledToday,
-        'this_week' => $cancelledThisWeek,
-        'this_month' => $cancelledThisMonth,
-        'total_value' => $cancelledTotalValue,
-        'value_today' => $cancelledValueToday,
-        'value_this_month' => $cancelledValueThisMonth,
-        'cancellation_rate_overall' => $cancellationRate . '%',
-        'cancellation_rate_this_month' => $cancellationRateThisMonth . '%',
-        'avg_cancelled_per_day_this_month' => $avgCancelledPerDay,
-        'last_7_days_breakdown' => $last7Days,
-    ];
- 
-    return response()->json([
-        'status' => true,
-        'data' => [
-            'stats' => $stats
-        ],
-        'message' => 'تم جلب الإحصائيات بنجاح'
-    ]);
-}
+    {
+        $user = $request->user();
+        $baseQuery = fn() => Order::where('user_id', $user->id);
+    
+        $today = Carbon::today();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $daysElapsedInMonth = Carbon::now()->day;
+    
+        // ================= 🆕 فلتر الفترة (يؤثر على رحلة الأموال فقط) =================
+        $period = $request->get('period', 'all'); // all | daily | weekly | monthly
+    
+        $periodStart = match ($period) {
+            'daily'   => Carbon::today(),
+            'weekly'  => Carbon::now()->startOfWeek(),
+            'monthly' => Carbon::now()->startOfMonth(),
+            default   => null,
+        };
+    
+        $financeQuery = function () use ($user, $periodStart) {
+            $q = Order::where('user_id', $user->id);
+            if ($periodStart) {
+                $q->where('created_at', '>=', $periodStart);
+            }
+            return $q;
+        };
+    
+        // ================= الإحصائيات القديمة (كما هي — للتوافق) =================
+        $stats = [
+            'total_orders' => $baseQuery()->count(),
+            'total_value' => $baseQuery()->where('status', 'completed')->sum('total'),
+            'total_amount' => $baseQuery()->where('status', 'completed')->sum('subtotal'),
+            'total_delivery_price' => $baseQuery()->where('status', 'completed')->sum('delivery_price'),
+            'pending' => $baseQuery()->where('status', 'pending')->count(),
+            'processing' => $baseQuery()->where('status', 'processing')->count(),
+            'completed' => $baseQuery()->where('status', 'completed')->count(),
+            'cancelled' => $baseQuery()->where('status', 'cancelled')->count(),
+        ];
+    
+        // ================= المحاسبة الحقيقية حسب حالة التوصيل (مفلترة بالفترة) =================
+    
+        // 🟡 قيد التحصيل: طرود ماشية بالطريق (متوقعة، غير مضمونة)
+        $inTransitStatuses = ['created', 'packed_ready', 'warehouse', 'on_way'];
+        $inTransit = $financeQuery()
+            ->whereIn('delivery_status', $inTransitStatuses)
+            ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
+            ->first();
+    
+        // 🔵 عند شركة النقل: الزبون دفع، الفلوس عند سابق بانتظار المحاسبة
+        $atCarrier = $financeQuery()
+            ->where('delivery_status', 'delivered')
+            ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
+            ->first();
+    
+        // 🟢 المُحصّل: سابق حاسبونا وقبضنا القيمة
+        //    + الطلبات القديمة (NULL) المكتملة بالنظام القديم
+        $collected = $financeQuery()
+            ->where(function ($q) {
+                $q->where('delivery_status', 'completed')
+                ->orWhere(function ($q2) {
+                    $q2->whereNull('delivery_status')
+                        ->where('status', 'completed');
+                });
+            })
+            ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net, COALESCE(SUM(total),0) as gross')
+            ->first();
+    
+        // المُحصّل هذا الشهر (على أساس آخر تحديث حالة — دائماً إجمالي، يُعرض في وضع "الكل")
+        $collectedThisMonth = $baseQuery()
+            ->where('delivery_status', 'completed')
+            ->where('delivery_status_updated_at', '>=', $startOfMonth)
+            ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(subtotal),0) as net')
+            ->first();
+    
+        // ⚠️ مفقود: على حساب شركة النقل — قيمته ستصلكم عند المحاسبة
+        $missing = $financeQuery()
+            ->where('delivery_status', 'missing')
+            ->selectRaw('COUNT(*) as cnt, COALESCE(SUM(total),0) as gross')
+            ->first();
+    
+        // ↩️ راجع (حسب سابق): خرج من قيد التحصيل تلقائياً
+        $returnedCount = $financeQuery()->where('delivery_status', 'returned')->count();
+    
+        // توزيع عددي لكل حالة توصيل (للـ chips في الفرونت)
+        $deliveryBreakdown = $financeQuery()
+            ->whereNotNull('delivery_status')
+            ->selectRaw('delivery_status, COUNT(*) as count')
+            ->groupBy('delivery_status')
+            ->pluck('count', 'delivery_status');
+    
+        $stats['delivery_finance'] = [
+            'period' => $period,
+            'in_transit' => [
+                'count' => (int) $inTransit->cnt,
+                'net'   => round((float) $inTransit->net, 2),   // الصافي المتوقع
+                'gross' => round((float) $inTransit->gross, 2), // الشامل (يحصّله السائق)
+            ],
+            'at_carrier' => [
+                'count' => (int) $atCarrier->cnt,
+                'net'   => round((float) $atCarrier->net, 2),
+                'gross' => round((float) $atCarrier->gross, 2),
+            ],
+            'collected' => [
+                'count' => (int) $collected->cnt,
+                'net'   => round((float) $collected->net, 2),   // ⭐ الرقم الحقيقي
+                'gross' => round((float) $collected->gross, 2),
+            ],
+            'collected_this_month' => [
+                'count' => (int) $collectedThisMonth->cnt,
+                'net'   => round((float) $collectedThisMonth->net, 2),
+            ],
+            'missing' => [
+                'count' => (int) $missing->cnt,
+                'gross' => round((float) $missing->gross, 2),
+            ],
+            'returned_count' => $returnedCount,
+            'breakdown' => $deliveryBreakdown,
+        ];
+    
+        // ================= تفاصيل الطلبات الملغاة (كما هي — إجمالية) =================
+        $cancelledToday = $baseQuery()
+            ->where('status', 'cancelled')
+            ->whereDate('updated_at', $today)
+            ->count();
+    
+        $cancelledThisWeek = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfWeek)
+            ->count();
+    
+        $cancelledThisMonth = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)
+            ->count();
+    
+        $cancelledTotalValue = $baseQuery()
+            ->where('status', 'cancelled')
+            ->sum('total');
+    
+        $cancelledValueThisMonth = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', $startOfMonth)
+            ->sum('total');
+    
+        $cancelledValueToday = $baseQuery()
+            ->where('status', 'cancelled')
+            ->whereDate('updated_at', $today)
+            ->sum('total');
+    
+        $cancellationRate = $stats['total_orders'] > 0
+            ? round(($stats['cancelled'] / $stats['total_orders']) * 100, 2)
+            : 0;
+    
+        $totalOrdersThisMonth = $baseQuery()
+            ->where('created_at', '>=', $startOfMonth)
+            ->count();
+    
+        $cancellationRateThisMonth = $totalOrdersThisMonth > 0
+            ? round(($cancelledThisMonth / $totalOrdersThisMonth) * 100, 2)
+            : 0;
+    
+        $avgCancelledPerDay = $daysElapsedInMonth > 0
+            ? round($cancelledThisMonth / $daysElapsedInMonth, 2)
+            : 0;
+    
+        $last7Days = $baseQuery()
+            ->where('status', 'cancelled')
+            ->where('updated_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+            ->selectRaw('DATE(updated_at) as date, COUNT(*) as count, SUM(total) as value')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+    
+        $stats['cancelled_details'] = [
+            'today' => $cancelledToday,
+            'this_week' => $cancelledThisWeek,
+            'this_month' => $cancelledThisMonth,
+            'total_value' => $cancelledTotalValue,
+            'value_today' => $cancelledValueToday,
+            'value_this_month' => $cancelledValueThisMonth,
+            'cancellation_rate_overall' => $cancellationRate . '%',
+            'cancellation_rate_this_month' => $cancellationRateThisMonth . '%',
+            'avg_cancelled_per_day_this_month' => $avgCancelledPerDay,
+            'last_7_days_breakdown' => $last7Days,
+        ];
+    
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'stats' => $stats
+            ],
+            'message' => 'تم جلب الإحصائيات بنجاح'
+        ]);
+    }
     public function customerRisk(Request $request)
     {
         $request->validate(['phone' => 'required|string']);
