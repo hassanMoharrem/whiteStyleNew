@@ -83,7 +83,7 @@ class SabeqWebhookController extends Controller
         $updates = [];
 
         if (!empty($newStatus) && in_array($newStatus, self::VALID_STATUSES, true)) {
-            if ($newStatus === 'cancelled' || $newStatus === 'returned') {
+            if ($newStatus === 'cancelled') {
                 // إذا أرسل سابق حالة "ملغى"، نعتبر الطلب ملغى عندنا أيضاً
                 $updates['status'] = 'cancelled';
             }

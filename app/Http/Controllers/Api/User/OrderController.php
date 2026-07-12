@@ -114,6 +114,7 @@ class OrderController extends Controller
         // ================= الإحصائيات القديمة (كما هي — للتوافق) =================
         $stats = [
             'total_orders' => $baseQuery()->count(),
+            'orders_today' => $baseQuery()->whereDate('created_at', $today)->count(),
             'total_value' => $baseQuery()->where('status', 'completed')->sum('total'),
             'total_amount' => $baseQuery()->where('status', 'completed')->sum('subtotal'),
             'total_delivery_price' => $baseQuery()->where('status', 'completed')->sum('delivery_price'),
@@ -588,6 +589,24 @@ public function update(Request $request, $id)
             ], 404);
         }
 
+        if ($order->status_delivery != 'created' && $order->status_delivery != 'packed_ready') {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يمكن حذف الطلب بعد أن تم شحنه لشركة النقل'
+            ], 403);
+        }
+        // change status in sabeq to cancelled if track_number exists
+        if ($order->track_number) {
+            try {
+                $sabeq = new \App\Services\SabeqService($user);
+                $sabeqResponse = $sabeq->cancelParcel($order->track_number);
+                Log::info('Sabeq cancellation response: ' . json_encode($sabeqResponse));
+            } catch (\Exception $e) {
+                Log::error('Sabeq parcel cancellation failed: ' . $e->getMessage());
+                // Continue with local deletion even if Sabeq fails
+            }
+        }
+
         // Only allow deletion for pending orders
         // if ($order->status !== 'pending') {
         //     return response()->json([
@@ -814,7 +833,7 @@ public function update(Request $request, $id)
  
         if (!empty($parcel['status'])) {
             // when parcel status == cancelled, we should also update the order status to cancelled
-            if ($parcel['status'] === 'cancelled' || $parcel['status'] === 'returned') {
+            if ($parcel['status'] === 'cancelled') {
                 $order->update([
                     'status' => 'cancelled',
                     'delivery_status' => $parcel['status'],
