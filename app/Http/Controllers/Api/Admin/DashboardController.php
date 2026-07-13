@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $period = $request->get('period', 'daily');
 
         $periodStart = match ($period) {
-            'weekly'  => Carbon::now()->startOfWeek(),
+            'weekly'  => Carbon::now()->subWeek(),
             'monthly' => Carbon::now()->startOfMonth(),
             default   => Carbon::today(), // daily
         };
