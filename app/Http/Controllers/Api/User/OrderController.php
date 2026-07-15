@@ -299,6 +299,7 @@ class OrderController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
+            'customer_phone2' => 'required|string|max:20',
             'city_id' => 'required|integer', // This is area_id from frontend
             'area_id' => 'nullable|integer', // Keep for backward compatibility
             'street_id' => 'nullable|integer',
@@ -330,6 +331,7 @@ class OrderController extends Controller
             'user_id' => $user->id,
             'customer_name' => $request->customer_name,
             'customer_phone' => $request->customer_phone,
+            'customer_phone2' => $request->customer_phone2 ?? '',
             'city_name' => $request->city_name,
             'area_name' => $request->area_name,
             'street_name' => $request->street_name ?? '',
@@ -426,6 +428,7 @@ public function update(Request $request, $id)
     $request->validate([
         'customer_name' => 'required|string|max:255',
         'customer_phone' => 'required|string|max:20',
+        'customer_phone2' => 'nullable|string|max:20',
         'city_name' => 'required|string|max:255',
         'area_name' => 'required|string|max:255',
         'street_name' => 'nullable|string|max:255',
@@ -444,6 +447,7 @@ public function update(Request $request, $id)
     $order->update([
         'customer_name'  => $request->customer_name,
         'customer_phone' => $request->customer_phone,
+        'phone2' => $order->customer_phone2 ?: '',
         'city_name'      => $request->city_name,
         'area_name'      => $request->area_name,
         'street_name'    => $request->street_name ?? '',

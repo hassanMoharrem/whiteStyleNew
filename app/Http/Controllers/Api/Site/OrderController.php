@@ -35,7 +35,7 @@ class OrderController extends Controller
             'city_name' => 'required|string|max:255',
             'area_name' => 'required|string|max:255',
             'street_name' => 'nullable|string|max:255',
-            'address' => 'required|string',
+            'address' => 'nullable|string',
             'description' => 'nullable|string',
             'delivery_cost' => 'nullable|integer',
             'items' => 'required|array|min:1',

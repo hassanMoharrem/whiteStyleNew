@@ -117,7 +117,7 @@ private function verificationToken()
             'verification_token' => $verificationToken,
             'name' => $order->customer_name,
             'phone1' => $order->customer_phone,
-            'phone2' => $order->customer_phone,
+            'phone2' => $order->customer_phone2 ?: '',
             'content' => $content,
             'payment_amount' => $order->total,
             'area_id' => $area_id,

@@ -10,6 +10,7 @@ class Order extends Model
         'user_id',
         'customer_name',
         'customer_phone',
+        'customer_phone2',
         'city_name',
         'area_name',
         'street_name',
