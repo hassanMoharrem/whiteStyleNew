@@ -91,7 +91,7 @@ class OrderController extends Controller
             'city_name' => $request->city_name,
             'area_name' => $request->area_name,
             'street_name' => $request->street_name,
-            'address' => $request->address,
+            'address' => $request->address ?? '',
             'description' => $request->description,
             'items' => $request->items,
             'subtotal' => $sub_total_edit,
