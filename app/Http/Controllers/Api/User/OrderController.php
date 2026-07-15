@@ -299,7 +299,7 @@ class OrderController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:20',
-            'customer_phone2' => 'required|string|max:20',
+            'customer_phone2' => 'nullable|string|max:20',
             'city_id' => 'required|integer', // This is area_id from frontend
             'area_id' => 'nullable|integer', // Keep for backward compatibility
             'street_id' => 'nullable|integer',
