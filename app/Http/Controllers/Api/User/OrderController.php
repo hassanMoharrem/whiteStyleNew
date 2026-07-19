@@ -864,4 +864,77 @@ public function update(Request $request, $id)
         ], 500);
     }
 }
+
+
+public function parseOrderText(Request $request)
+{
+    $request->validate(['text' => 'required|string|max:3000']);
+    $model = config('services.gemini.model');
+    $apiKey = config('services.gemini.api_key');
+    if (empty($apiKey)) {
+        return response()->json(['status' => false, 'message' => 'الخدمة غير مفعلة'], 500);
+    }
+
+    $prompt = <<<PROMPT
+أنت مساعد لإدخال طلبات توصيل في فلسطين. استخرج من النص التالي بيانات الطلب وأرجعها بصيغة JSON فقط بدون أي نص إضافي وبدون markdown:
+
+{
+  "customer_name": "اسم الزبون أو null",
+  "customer_phone": "رقم الهاتف الأول بصيغة أرقام فقط أو null",
+  "customer_phone2": "رقم هاتف ثاني إن وجد أو null",
+  "area_name": "اسم المدينة/البلدة/القرية كما ورد أو null",
+  "address": "تفاصيل العنوان الإضافية (حي، شارع، معلم) أو null",
+  "description": "وصف المنتجات المطلوبة أو null",
+  "price": السعر كرقم أو null,
+  "notes": "أي ملاحظات للتوصيل أو null"
+}
+
+قواعد:
+- أرقام الهواتف الفلسطينية تبدأ بـ 05 وطولها 10 خانات، وقد تُكتب بمسافات أو شرطات — نظّفها لأرقام متصلة. حوّل الأرقام العربية (٠-٩) لإنجليزية.
+- السعر هو الرقم المرتبط بكلمات مثل: سعر، شيكل، شيقل، ₪، المطلوب، المبلغ. إن وُجد أكثر من رقم غير هاتفي، اختر الأنسب كسعر.
+- area_name هو اسم المكان الجغرافي فقط بدون كلمات مثل "مدينة" أو "بلدة".
+- لا تخترع أي معلومة غير موجودة — استخدم null.
+
+النص:
+{$request->text}
+PROMPT;
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(20)->post(
+            "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
+            [
+                'contents' => [['parts' => [['text' => $prompt]]]],
+                'generationConfig' => [
+                    'temperature' => 0.1,
+                    'responseMimeType' => 'application/json',
+                ],
+            ]
+        );
+
+        if (!$response->successful()) {
+    Log::error('Gemini parse failed: ' . $response->body());
+
+    if ($response->status() === 429) {
+        return response()->json([
+            'status' => false,
+            'message' => 'الخدمة مشغولة حالياً — انتظر دقيقة وحاول مرة أخرى'
+        ], 429);
+    }
+
+    return response()->json(['status' => false, 'message' => 'فشل تحليل النص، حاول مرة أخرى'], 502);
+}
+
+        $raw = $response->json('candidates.0.content.parts.0.text');
+        $parsed = json_decode($raw, true);
+
+        if (!is_array($parsed)) {
+            return response()->json(['status' => false, 'message' => 'تعذر فهم النص'], 422);
+        }
+
+        return response()->json(['status' => true, 'data' => $parsed]);
+    } catch (\Exception $e) {
+        Log::error('Gemini exception: ' . $e->getMessage());
+        return response()->json(['status' => false, 'message' => 'فشل الاتصال بخدمة التحليل'], 502);
+    }
+}
 }

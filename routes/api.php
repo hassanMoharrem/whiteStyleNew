@@ -135,6 +135,8 @@ Route::prefix('user')->group(function () {
         Route::get('/orders/{id}/print', [App\Http\Controllers\Api\User\OrderController::class, 'print']);
         Route::post('/orders/find-by-track', [App\Http\Controllers\Api\User\OrderController::class, 'findByTrackNumber']);
         Route::post('/orders/bulk-mark-ready', [App\Http\Controllers\Api\User\OrderController::class, 'bulkMarkReady']);
+        Route::post('/orders/parse-text', [App\Http\Controllers\Api\User\OrderController::class, 'parseOrderText']);
+
         // findByTrackNumberForReturn
         Route::post('/orders/find-by-track-for-return', [App\Http\Controllers\Api\User\OrderController::class, 'findByTrackNumberForReturn']);
         // bulkCancel
